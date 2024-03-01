@@ -1,0 +1,33 @@
+Added Component: Designator=IC?(ESOP-10L)
+Add Component: Footprint Not Found FP-DBT0030A-IPC_C
+Added Component: Designator=IC?(Espressif ESP32C3WROOM02N4)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.mouser.ch/datasheet/2/891/Espressif_ESP32_C3_WROOM_02-2006871.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "3.35mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Espressif Systems"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "ESP32-C3-WROOM-02-N4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "356-ESP32C3WROOM02N4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Espressif-Systems/ESP32-C3-WROOM-02-N4?qs=stqOd1AaK7%2FqjTZKEOgfUg%3D%3D"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "Mouser"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier Part Number"; Value = "356-ESP32C3WROOM02N4"; VariantName = "[No Variations]"
+Add Component: Footprint Not Found KINGHELM_KH-TYPE-C-16P
+Added Pin To Net: NetName=+3V3 Pin=IC?-1
+Added Net: Name=+3V3
+Added Pin To Net: NetName=ESP_RST Pin=IC?-2
+Added Net: Name=ESP_RST
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Pin To Net: NetName=GND Pin=IC?-19
+Added Net: Name=GND
+Added Pin To Net: NetName=GPIO8 Pin=IC?-7
+Added Net: Name=GPIO8
+Added Class: Name=ESP32-C3-WROOM-2
+Added Class: Name=Topdesign
+Added Class: Name=USB_UART
