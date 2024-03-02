@@ -1,4 +1,5 @@
-Record=TopLevelDocument|FileName=BQ76930.SchDoc|SheetNumber=2
-Record=NoMainPathDocument|SourceDocument=BQ76930.SchDoc|FileName=ESP32-C3-WROOM-2.SchDoc|SheetNumber=1
-Record=NoMainPathDocument|SourceDocument=BQ76930.SchDoc|FileName=Topdesign.SchDoc|SheetNumber=3
-Record=NoMainPathDocument|SourceDocument=BQ76930.SchDoc|FileName=USB_UART.SchDoc|SheetNumber=4
+Record=TopLevelDocument|FileName=Topdesign.SchDoc|SheetNumber=1
+Record=SheetSymbol|SourceDocument=Topdesign.SchDoc|Designator=U_3V3_Buck_Regulator|SchDesignator=U_3V3_Buck_Regulator|FileName=3V3_Buck_Regulator.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=3V3_Buck_Regulator.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Topdesign.SchDoc|Designator=U_BQ76930|SchDesignator=U_BQ76930|FileName=BQ76930.SchDoc|SheetNumber=3|SymbolType=Normal|RawFileName=BQ76930.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Topdesign.SchDoc|Designator=U_ESP32-C3-WROOM-2|SchDesignator=U_ESP32-C3-WROOM-2|FileName=ESP32-C3-WROOM-2.SchDoc|SheetNumber=2|SymbolType=Normal|RawFileName=ESP32-C3-WROOM-2.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Topdesign.SchDoc|Designator=U_USB_UART|SchDesignator=U_USB_UART|FileName=USB_UART.SchDoc|SheetNumber=4|SymbolType=Normal|RawFileName=USB_UART.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
