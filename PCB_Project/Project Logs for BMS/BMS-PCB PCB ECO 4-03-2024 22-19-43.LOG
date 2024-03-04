@@ -1,0 +1,31 @@
+Added Component: Designator=R?(RESC1609X50X30NL8T20)
+Add component (AddParameter): Name = "ComponentLink1Description"; Value = "Manufacturer URL"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink1URL"; Value = "http://www.vishay.com/"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink2Description"; Value = "Datasheet"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink2URL"; Value = "https://datasheet.ciiva.com/11809/0900766b80d98afc-11809037.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "DatasheetVersion"; Value = "06/2012"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "0.45 mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Length"; Value = "1.55 mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer"; Value = "Vishay Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Max Operating Temperature"; Value = "155 degC"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Min Operating Temperature"; Value = "-55 degC"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mounting Technology"; Value = "Surface Mount"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package Quantity"; Value = "5000"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "2-Pin Surface Mount Device, Body 1.575 x 0.85 mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "0603"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Packaging"; Value = "Tape and Reel"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "REACH SVHC"; Value = "Unknown"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "RoHSCompliant"; Value = "true"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = "10k/DNP"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Voltage Rating"; Value = "75 V"; VariantName = "[No Variations]"
+Add Pin To Net: Unknown Pin: Pin IC?-20
+Add Pin To Net: Unknown Pin: Pin IC?-21
+Add Pin To Net: Unknown Pin: Pin IC?-22
+Add Pin To Net: Unknown Pin: Pin IC?-23
+Add Pin To Net: Unknown Pin: Pin IC?-24
+Add Pin To Net: Unknown Pin: Pin IC?-25
+Add Pin To Net: Unknown Pin: Pin IC?-26
+Add Pin To Net: Unknown Pin: Pin IC?-27
+Added Pin To Net: NetName=+VBUS Pin=R?-1
+Added Pin To Net: NetName=42V Pin=R?-2
+Added Member To Class: ClassName=U_3V3_Buck_Regulator Member=Component R? CRCW060310K0FKEA
