@@ -1,0 +1,181 @@
+Removed Pin From Net: NetName=21V Pin=R26-1
+Removed Pin From Net: NetName=NetQ5_3 Pin=R26-2
+Removed Pin From Net: NetName=42V Pin=R29-1
+Removed Pin From Net: NetName=NetQ6_3 Pin=R29-2
+Removed Pin From Net: NetName=16.8V Pin=R32-1
+Removed Pin From Net: NetName=NetQ7_3 Pin=R32-2
+Removed Pin From Net: NetName=37.8V Pin=R35-1
+Removed Pin From Net: NetName=NetQ8_3 Pin=R35-2
+Removed Pin From Net: NetName=12.6V Pin=R38-1
+Removed Pin From Net: NetName=NetQ9_3 Pin=R38-2
+Removed Pin From Net: NetName=33.6V Pin=R41-1
+Removed Pin From Net: NetName=NetQ10_3 Pin=R41-2
+Removed Pin From Net: NetName=8.4V Pin=R44-1
+Removed Pin From Net: NetName=NetQ11_3 Pin=R44-2
+Removed Pin From Net: NetName=29.4V Pin=R47-1
+Removed Pin From Net: NetName=NetQ12_3 Pin=R47-2
+Removed Pin From Net: NetName=4.2V Pin=R50-1
+Removed Pin From Net: NetName=NetQ13_3 Pin=R50-2
+Removed Pin From Net: NetName=25.2V Pin=R53-1
+Removed Pin From Net: NetName=NetQ14_3 Pin=R53-2
+Removed Member From Class: ClassName=U_Balancing Member=C11
+Removed Member From Class: ClassName=U_Balancing Member=C13
+Removed Member From Class: ClassName=BQ76930 Member=C14
+Removed Member From Class: ClassName=U_Balancing Member=C14
+Removed Member From Class: ClassName=U_Balancing Member=C15
+Removed Member From Class: ClassName=U_Balancing Member=C16
+Removed Member From Class: ClassName=BQ76930 Member=C19
+Removed Member From Class: ClassName=BQ76930 Member=C25
+Removed Member From Class: ClassName=U_Balancing Member=D1
+Removed Member From Class: ClassName=BQ76930 Member=D2
+Removed Member From Class: ClassName=U_Balancing Member=D2
+Removed Member From Class: ClassName=USB_UART Member=J4
+Removed Member From Class: ClassName=U_Balancing Member=R9
+Removed Member From Class: ClassName=USB_UART Member=R9
+Removed Member From Class: ClassName=U_Balancing Member=R10
+Removed Member From Class: ClassName=USB_UART Member=R10
+Removed Member From Class: ClassName=U_Balancing Member=R13
+Removed Member From Class: ClassName=U_Balancing Member=R14
+Removed Member From Class: ClassName=U_Balancing Member=R21
+Removed Member From Class: ClassName=U_Balancing Member=R23
+Removed Member From Class: ClassName=BQ76930 Member=R27
+Removed Member From Class: ClassName=Topdesign Member=R30
+Removed Member From Class: ClassName=BQ76930 Member=R33
+Removed Member From Class: ClassName=USB_UART Member=R36
+Removed Member From Class: ClassName=BQ76930 Member=R39
+Removed Member From Class: ClassName=Topdesign Member=R45
+Removed Member From Class: ClassName=3V3 Buck Regulator Member=R51
+Change Component Footprint: Designator=R26 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R29 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R32 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R35 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R38 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R41 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R44 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R47 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R50 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Footprint: Designator=R53 Old Footprint=RESC1608X55X25LL10T15 New Footprint=FOJAN 2010 Resistor
+Change Component Comment : Designator=R26 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R29 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R32 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R35 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R38 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R41 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R44 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R47 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R50 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Component Comment : Designator=R53 Old Comment=RC0603FR-0733RL New Comment=FRC2010F33R0TS
+Change Managed Component Library Link : Designator=R26 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R29 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R32 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R35 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R38 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R41 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R44 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R47 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R50 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change Managed Component Library Link : Designator=R53 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID= Old ItemGUID=A180541C-28DC-497F-881F-0CAD8D941162 New ItemGUID= Old RevisionGUID=C8D85699-E7F8-48BB-8EFC-4F50793C333F New RevisionGUID=
+Change component parameters: Designator = "R26" ("R26"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\RNAWWAUT" ("\UGMVBMNV\RNAWWAUT")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R29" ("R29"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\ZQYBPQQL" ("\UGMVBMNV\ZQYBPQQL")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R32" ("R32"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\ASZYKRKH" ("\UGMVBMNV\ASZYKRKH")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R35" ("R35"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\NHMLMBYM" ("\UGMVBMNV\NHMLMBYM")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R38" ("R38"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\NQVMDOXM" ("\UGMVBMNV\NQVMDOXM")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R41" ("R41"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\OIYUREFX" ("\UGMVBMNV\OIYUREFX")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R44" ("R44"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\KTSRSBVS" ("\UGMVBMNV\KTSRSBVS")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R47" ("R47"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\OHGXMUHY" ("\UGMVBMNV\OHGXMUHY")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R50" ("R50"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\ZSTMGOUB" ("\UGMVBMNV\ZSTMGOUB")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R53" ("R53"); Footprint = "RESC1608X55X25LL10T15"; UniqueID = "\UGMVBMNV\TPHEIWXC" ("\UGMVBMNV\TPHEIWXC")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Fojan"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33R"; VariantName = "[No Variations]"
+Add Pin To Net: Unknown Pin: Pin IC1-20
+Add Pin To Net: Unknown Pin: Pin IC1-21
+Add Pin To Net: Unknown Pin: Pin IC1-22
+Add Pin To Net: Unknown Pin: Pin IC1-23
+Add Pin To Net: Unknown Pin: Pin IC1-24
+Add Pin To Net: Unknown Pin: Pin IC1-25
+Add Pin To Net: Unknown Pin: Pin IC1-26
+Add Pin To Net: Unknown Pin: Pin IC1-27
+Added Pin To Net: NetName=NetQ5_3 Pin=R26-1
+Added Pin To Net: NetName=21V Pin=R26-2
+Added Pin To Net: NetName=NetQ6_3 Pin=R29-1
+Added Pin To Net: NetName=42V Pin=R29-2
+Added Pin To Net: NetName=NetQ7_3 Pin=R32-1
+Added Pin To Net: NetName=16.8V Pin=R32-2
+Added Pin To Net: NetName=NetQ8_3 Pin=R35-1
+Added Pin To Net: NetName=37.8V Pin=R35-2
+Added Pin To Net: NetName=NetQ9_3 Pin=R38-1
+Added Pin To Net: NetName=12.6V Pin=R38-2
+Added Pin To Net: NetName=NetQ10_3 Pin=R41-1
+Added Pin To Net: NetName=33.6V Pin=R41-2
+Added Pin To Net: NetName=NetQ11_3 Pin=R44-1
+Added Pin To Net: NetName=8.4V Pin=R44-2
+Added Pin To Net: NetName=NetQ12_3 Pin=R47-1
+Added Pin To Net: NetName=29.4V Pin=R47-2
+Added Pin To Net: NetName=NetQ13_3 Pin=R50-1
+Added Pin To Net: NetName=4.2V Pin=R50-2
+Added Pin To Net: NetName=NetQ14_3 Pin=R53-1
+Added Pin To Net: NetName=25.2V Pin=R53-2
+Added Member To Class: ClassName=BQ76930 Member=Component C5 C1608X5R1H105K080AB
+Added Member To Class: ClassName=BQ76930 Member=Component C6 CL10A106MP8NNNC
+Added Member To Class: ClassName=BQ76930 Member=Component C7 C1608X5R1H105K080AB
+Added Member To Class: ClassName=BQ76930 Member=Component C8 C1608X5R1H105K080AB
+Added Member To Class: ClassName=BQ76930 Member=Component C9 CL10A106MP8NNNC
+Added Member To Class: ClassName=BQ76930 Member=Component C10 GRM188R71H104KA93D
+Added Member To Class: ClassName=BQ76930 Member=Component C12 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C17 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C18 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C20 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C21 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C22 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C23 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C24 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C26 GRM188R71H104KA93D
+Added Member To Class: ClassName=U_Balancing Member=Component C28 GRM188R71H104KA93D
+Added Member To Class: ClassName=BQ76930 Member=Component D1 1N4148W-7-F
+Added Member To Class: ClassName=U_Balancing Member=Component D3 1N4148W-7-F
+Added Member To Class: ClassName=U_Balancing Member=Component D4 1N4148W-7-F
+Added Member To Class: ClassName=USB_UART Member=Component J3 KH-TYPE-C-16P
+Added Member To Class: ClassName=BQ76930 Member=Component R4 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R6 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R8 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R9 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R10 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R11 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R12 CRCW060310K0FKEA
+Added Member To Class: ClassName=BQ76930 Member=Component R14 ERJ-M1WSF5M0U
+Added Member To Class: ClassName=Topdesign Member=Component R15 RC0603FR-072K2L
+Added Member To Class: ClassName=Topdesign Member=Component R16 RC0603FR-072K2L
+Added Member To Class: ClassName=USB_UART Member=Component R17 CRCW060310K0FKEA
+Added Member To Class: ClassName=USB_UART Member=Component R18 CRCW08055K10FKEA
+Added Member To Class: ClassName=USB_UART Member=Component R19 CRCW08055K10FKEA
+Added Member To Class: ClassName=USB_UART Member=Component R20 CRCW060310K0FKEA
+Added Member To Class: ClassName=3V3 Buck Regulator Member=Component R22 CRCW060310K0FKEA
+Added Member To Class: ClassName=3V3 Buck Regulator Member=Component R24 0603WAF2702T5E
+Added Member To Class: ClassName=U_Balancing Member=Component R25 CRCW060310K0FKEA
+Added Member To Class: ClassName=U_Balancing Member=Component R26 FRC2010F33R0TS
+Added Member To Class: ClassName=U_Balancing Member=Component R27 CRCW060310K0FKEA
+Added Member To Class: ClassName=U_Balancing Member=Component R28 CRCW060310K0FKEA
+Added Member To Class: ClassName=U_Balancing Member=Component R29 FRC2010F33R0TS
+Added Member To Class: ClassName=U_Balancing Member=Component R31 CRCW060310K0FKEA
+Added Member To Class: ClassName=U_Balancing Member=Component R32 FRC2010F33R0TS
+Added Member To Class: ClassName=U_Balancing Member=Component R33 CRCW060310K0FKEA
+Added Member To Class: ClassName=U_Balancing Member=Component R34 CRCW060310K0FKEA
+Added Member To Class: ClassName=U_Balancing Member=Component R35 FRC2010F33R0TS
