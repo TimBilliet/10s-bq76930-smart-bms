@@ -1,0 +1,14 @@
+Added Pin To Net: NetName=3V3 Pin=C16-1
+Add Pin To Net: Unknown Pin: Pin IC1-20
+Add Pin To Net: Unknown Pin: Pin IC1-21
+Add Pin To Net: Unknown Pin: Pin IC1-22
+Add Pin To Net: Unknown Pin: Pin IC1-23
+Add Pin To Net: Unknown Pin: Pin IC1-24
+Add Pin To Net: Unknown Pin: Pin IC1-25
+Add Pin To Net: Unknown Pin: Pin IC1-26
+Add Pin To Net: Unknown Pin: Pin IC1-27
+Added Pin To Net: NetName=3V3 Pin=L1-2
+Added Pin To Net: NetName=3V3 Pin=R15-2
+Added Pin To Net: NetName=3V3 Pin=R16-2
+Added Pin To Net: NetName=3V3 Pin=R23-1
+Change Net Name : Old Net Name=3V3 New Net Name=+3V3

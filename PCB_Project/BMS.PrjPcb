@@ -153,6 +153,10 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=JCHDUEQB
 
+[GeneratedDocument1]
+DocumentPath=Project Outputs for BMS\Design Rule Check - BMS-PCB.html
+DItemRevisionGUID=
+
 [Configuration1]
 Name=Sources
 ParameterCount=0
