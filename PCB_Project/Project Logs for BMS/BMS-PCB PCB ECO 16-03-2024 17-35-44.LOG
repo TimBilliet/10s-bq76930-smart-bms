@@ -1,0 +1,41 @@
+Added Component: Designator=IC1(Espressif ESP32C3WROOM02N4)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.mouser.ch/datasheet/2/891/Espressif_ESP32_C3_WROOM_02-2006871.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "3.35mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Espressif Systems"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "ESP32-C3-WROOM-02-N4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "356-ESP32C3WROOM02N4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Espressif-Systems/ESP32-C3-WROOM-02-N4?qs=stqOd1AaK7%2FqjTZKEOgfUg%3D%3D"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "Mouser"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier Part Number"; Value = "356-ESP32C3WROOM02N4"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=+3V3 Pin=IC1-1
+Added Pin To Net: NetName=ESP_RST Pin=IC1-2
+Added Pin To Net: NetName=NetIC1_3 Pin=IC1-3
+Added Pin To Net: NetName=NetIC1_4 Pin=IC1-4
+Added Pin To Net: NetName=NetIC1_5 Pin=IC1-5
+Added Pin To Net: NetName=NetIC1_6 Pin=IC1-6
+Added Pin To Net: NetName=GPIO8 Pin=IC1-7
+Added Pin To Net: NetName=GPIO9 Pin=IC1-8
+Added Pin To Net: NetName=GND Pin=IC1-9
+Added Pin To Net: NetName=RX Pin=IC1-11
+Added Pin To Net: NetName=TX Pin=IC1-12
+Added Pin To Net: NetName=SERV_SIG_D Pin=IC1-15
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Added Pin To Net: NetName=GND Pin=IC1-19
+Add Pin To Net: Unknown Pin: Pin IC1-20
+Add Pin To Net: Unknown Pin: Pin IC1-21
+Add Pin To Net: Unknown Pin: Pin IC1-22
+Add Pin To Net: Unknown Pin: Pin IC1-23
+Add Pin To Net: Unknown Pin: Pin IC1-24
+Add Pin To Net: Unknown Pin: Pin IC1-25
+Add Pin To Net: Unknown Pin: Pin IC1-26
+Add Pin To Net: Unknown Pin: Pin IC1-27
+Added Member To Class: ClassName=ESP32-C3-WROOM-2 Member=Component IC1 ESP32-C3-WROOM-02-N4

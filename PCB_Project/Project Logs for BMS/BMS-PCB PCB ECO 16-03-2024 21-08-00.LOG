@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=SERV_SIG Pin=R17-2
+Removed Pin From Net: NetName=GND Pin=R18-1
+Removed Member From Class: ClassName=ESP32-C3-WROOM-2 Member=R17
+Removed Member From Class: ClassName=ESP32-C3-WROOM-2 Member=R18
+Added Pin To Net: NetName=SERV_SIG Pin=IC3-15

@@ -1,0 +1,3 @@
+Added Component: Designator=J9(1 pin header)
+Added Pin To Net: NetName=NetJ9_1 Pin=J9-1
+Added Member To Class: ClassName=ESP32-C3-WROOM-2 Member=Component J9 1 pin header

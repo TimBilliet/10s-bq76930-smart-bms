@@ -1,0 +1,9 @@
+Added Component: Designator=Q4(MCC SOT-23-3)
+Add component (AddParameter): Name = "Manufacturer"; Value = "MCC"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer Part Number"; Value = "SI2310B-TP"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Pricing"; Value = "1=0,36, 10=0,255, 100=0,1286, 500=0,10488, 1000=0,07782 (USD)"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "RoHS"; Value = "Yes"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Stock"; Value = "114263"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "Digikey"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier Part Number"; Value = "353-SI2310B-TPCT-ND"; VariantName = "[No Variations]"
+Added Member To Class: ClassName=ESP32-C3-WROOM-2 Member=Component Q4 SI2310B-TP
