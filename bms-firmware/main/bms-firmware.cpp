@@ -26,7 +26,7 @@ bq76930 bms(0x08, sda_pin, scl_pin);
 extern "C" {void app_main(void);}
 
 #define TAG "SmartBMS-main"
-// const std::string ble_device_name = "SmartBMS";
+const char *ble_device_name = "SmartBMS";
 bool is_advertising_initialized = false;
 #define PROFILE_A_APP_ID 0
 
@@ -53,12 +53,10 @@ static esp_ble_adv_data_t adv_data = {
 };
 
 static esp_ble_adv_params_t adv_params = {
-    .adv_int_min        = 0x20,
+    .adv_int_min        = 0x40,
     .adv_int_max        = 0x40,
     .adv_type           = ADV_TYPE_IND,
     .own_addr_type      = BLE_ADDR_TYPE_PUBLIC,
-    //.peer_addr            =
-    //.peer_addr_type       =
     .channel_map        = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
@@ -68,28 +66,9 @@ void gapEventHandler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param
         case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
         adv_config_done &= (~adv_config_flag);
         if (adv_config_done == 0){
+            printf("start advertising\n");
             esp_ble_gap_start_advertising(&adv_params);
         }
-        break;
-        case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
-        adv_config_done &= (~scan_rsp_config_flag);
-        if (adv_config_done == 0){
-            esp_ble_gap_start_advertising(&adv_params);
-        }
-        break;
-
-        case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
-        //advertising start complete event to indicate advertising start successfully or failed
-        if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(TAG, "Advertising start failed");
-        }
-        break;
-        case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
-        if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(TAG, "Advertising stop failed");
-        }
-        break;
-        case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
         break;
         default:
         break;
@@ -106,7 +85,7 @@ void addService(esp_gatt_if_t gatts_if) {
 void onServiceCreated(esp_ble_gatts_cb_param_t::gatts_create_evt_param create) {
     uint16_t service_handle = create.service_handle;
     uint16_t service_id = create.service_id.id.uuid.uuid.uuid16;
-    //characteristic_handles_[service_id] = service_handle;
+    attribute_handles_[service_id] = service_handle;
     esp_ble_gatts_start_service(service_handle);
     if(service_id == battery_service_uuid_) {
         // Add battery voltage charactersitic.
@@ -136,7 +115,7 @@ void onServiceCreated(esp_ble_gatts_cb_param_t::gatts_create_evt_param create) {
             return;
         }
 
-        // Add battery cell voltage charactersitic.
+        // Add battery cell voltages charactersitic.
         esp_bt_uuid_t bat_cell_voltage_char_uuid = { };
         bat_cell_voltage_char_uuid.len = ESP_UUID_LEN_16;
         bat_cell_voltage_char_uuid.uuid.uuid16 = battery_cell_voltage_char_uuid_;   
@@ -153,13 +132,56 @@ void onServiceCreated(esp_ble_gatts_cb_param_t::gatts_create_evt_param create) {
             return;
         }
 
-        // Add battery voltage description charactersitic.
+        // Add battery cell voltages description charactersitic.
         esp_bt_uuid_t descr_uuid2 = { };
         descr_uuid2.len = ESP_UUID_LEN_16;
         descr_uuid2.uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
         add_descr_ret = esp_ble_gatts_add_char_descr(service_handle, &descr_uuid2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, NULL, NULL);
         if (add_descr_ret) {
             ESP_LOGE(TAG, "Adding characteristic descriptor failed, error code =%x", add_descr_ret);
+            return;
+        }
+        vTaskDelay(40 / portTICK_PERIOD_MS);
+        // Add balancing enabled charactersitic.
+        uint8_t enable_balancing = 1;
+        esp_bt_uuid_t balancing_char_uuid = { };
+        balancing_char_uuid.len = ESP_UUID_LEN_16;
+        balancing_char_uuid.uuid.uuid16 = 0x3007;   
+        esp_attr_value_t enable_balancing_value = { .attr_max_len = sizeof(enable_balancing), .attr_len = sizeof(enable_balancing), .attr_value = (uint8_t*)&enable_balancing};
+        add_char_ret = esp_ble_gatts_add_char(service_handle,
+            &balancing_char_uuid,
+            (esp_gatt_perm_t)ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+            &enable_balancing_value,
+            NULL);
+            
+        if (add_char_ret) { 
+            ESP_LOGE(TAG, "Adding characteristic %04X failed, error code =%x", balancing_char_uuid.uuid.uuid16, add_char_ret);
+            return;
+        }
+        esp_bt_uuid_t descr_uuid3 = { };
+        descr_uuid3.len = ESP_UUID_LEN_16;
+        descr_uuid3.uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
+        add_descr_ret = esp_ble_gatts_add_char_descr(service_handle, &descr_uuid3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, NULL, NULL);
+        if (add_descr_ret) {
+            ESP_LOGE(TAG, "Adding characteristic descriptor failed, error code =%x", add_descr_ret);
+            return;
+        }
+
+        // Add charging enabled charactersitic.
+        esp_bt_uuid_t charging_char_uuid = { };
+        charging_char_uuid.len = ESP_UUID_LEN_16;
+        charging_char_uuid.uuid.uuid16 = enable_charging_char_uuid_;   
+        esp_attr_value_t enable_charging_value = { .attr_max_len = sizeof(enable_charging_), .attr_len = sizeof(enable_charging_), .attr_value = (uint8_t*)&enable_charging_};
+        add_char_ret = esp_ble_gatts_add_char(service_handle,
+            &charging_char_uuid,
+            (esp_gatt_perm_t)ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+            &enable_charging_value,
+            NULL);
+            
+        if (add_char_ret) { 
+            ESP_LOGE(TAG, "Adding characteristic %04X failed, error code =%x", charging_char_uuid.uuid.uuid16, add_char_ret);
             return;
         }
     }
@@ -182,7 +204,7 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
     esp_gatt_rsp_t rsp;
     memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
     rsp.attr_value.handle = read.handle;
-    if(read.handle == characteristic_handles_[0x3001]) { // reading of the battery voltage characteristic
+    if(read.handle == attribute_handles_[0x3001]) { // reading of the battery voltage characteristic
         battery_voltage_ = bms.getBatteryVoltage();
         rsp.attr_value.len = 2;
         uint8_t MSByte = battery_voltage_ >> 8;
@@ -190,7 +212,7 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         rsp.attr_value.value[0] = MSByte;
         rsp.attr_value.value[1] = LSByte;
         esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
-    } else if (read.handle == characteristic_handles_[0x3002]) { // reading of the battery cell voltage characteristic
+    } else if (read.handle == attribute_handles_[0x3002]) { // reading of the battery cell voltage characteristic
         rsp.attr_value.len = 20;
         uint8_t response_index = 0;
         for (int i = 0; i < 10; i++) {
@@ -202,7 +224,7 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
             response_index += 2;
         }
         esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
-    } else if (read.handle == characteristic_handles_[0x3003]) { // reading of the charge current characteristic
+    } else if (read.handle == attribute_handles_[0x3003]) { // reading of the charge current characteristic
         //TODO handle read event of the charge current characteristic
     }
 }
@@ -245,7 +267,7 @@ void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, 
         break;
         case ESP_GATTS_ADD_CHAR_EVT:
             ESP_LOGI("SensorServer", "ADD_CHAR_EVT, status %d,  attr_handle %d, service_handle %d", param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
-            characteristic_handles_[param->add_char.char_uuid.uuid.uuid16] = param->add_char.attr_handle;
+            attribute_handles_[param->add_char.char_uuid.uuid.uuid16] = param->add_char.attr_handle;
         break;
         case ESP_GATTS_ADD_CHAR_DESCR_EVT:
         break;
@@ -278,11 +300,6 @@ void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, 
         break;
         case ESP_GATTS_RESPONSE_EVT:
         break;
-        case ESP_GATTS_CREAT_ATTR_TAB_EVT:
-        break;
-        case ESP_GATTS_SET_ATTR_VAL_EVT:
-        break;
-
         default:
         break;
     }
@@ -339,7 +356,7 @@ bool bluetoothInit() {
         ESP_LOGE(TAG, "set local  MTU failed, error code = %x", ret);
         return false;
     }
-    ret = esp_ble_gap_set_device_name("test_server");
+    ret = esp_ble_gap_set_device_name(ble_device_name);
     if (ret){
         ESP_LOGE(TAG, "set name failed, error code = %x", ret);
         return false;
