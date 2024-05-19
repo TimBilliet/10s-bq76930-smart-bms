@@ -7,8 +7,7 @@ This PCB is meant for a diy E-skate, that's why it has some extra functions.
 There is a header for connecting servo signals and a mosfet to switch 12V leds. The leds are supposed to light up when braking.
 The programming circuitry for the ESP32-C3 is on an external board to save space.  
 
-![image](https://github.com/TimBilliet/10s-bq76930-smart-bms/assets/47719114/b8ee4def-0600-4879-b1bb-690229794970)
-
+![image](https://github.com/TimBilliet/10s-bq76930-smart-bms/assets/47719114/006d26ed-25e1-4275-9ca6-337fc7d32524)
 
 ## DONE:
 Testing the cell voltage reading function(tested with existing Arduino library)\
