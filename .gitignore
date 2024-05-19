@@ -53,3 +53,7 @@ dkms.conf
 .vscode
 Project Logs for BMS
 History
+build
+sdkconfig
+sdkconfig.old
+
