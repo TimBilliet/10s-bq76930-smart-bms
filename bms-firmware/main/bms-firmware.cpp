@@ -15,33 +15,40 @@
 #include "nvs_flash.h"
 #include "bms-firmware.h"
 
+extern "C" {void app_main(void);}
+
+#define TAG "SmartBMS-main"
+#define CHAR_DECLARATION_SIZE       (sizeof(uint8_t))
+
+#define PROFILE_APP_ID 0
+
 int sda_pin = 5;
 int scl_pin = 4;
 
 int boot_pin = 6;
 int alert_pin = 7;
 
-bq76930 bms(0x08, sda_pin, scl_pin);
+//bq76930 bms(0x08, sda_pin, scl_pin);
 
-extern "C" {void app_main(void);}
-
-#define TAG "SmartBMS-main"
 const char *ble_device_name = "SmartBMS";
-bool is_advertising_initialized = false;
-#define PROFILE_A_APP_ID 0
 
-static uint8_t adv_config_done = 0;
-#define adv_config_flag      (1 << 0)
-#define scan_rsp_config_flag (1 << 1)
+uint16_t info_handle_table[INFO_TABLE_ITEM_COUNT];
+uint16_t param_handle_table[INFO_TABLE_ITEM_COUNT];
 
-
+static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
+static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
+static const uint16_t character_client_config_uuid = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
+static const uint8_t char_prop_read                =  ESP_GATT_CHAR_PROP_BIT_READ;
+static const uint8_t char_prop_write               = ESP_GATT_CHAR_PROP_BIT_WRITE;
+static const uint8_t char_prop_read_write          = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ;
+static const uint8_t char_prop_read_write_notify   = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY;
 
 static esp_ble_adv_data_t adv_data = {
     .set_scan_rsp = false,
     .include_name = true,
     .include_txpower = false,
-    .min_interval = 0x0006, //slave connection min interval, Time = min_interval * 1.25 msec
-    .max_interval = 0x0010, //slave connection max interval, Time = max_interval * 1.25 msec
+    .min_interval = 0x0200, //slave connection min interval, Time = min_interval * 1.25 msec
+    .max_interval = 0x0200, //slave connection max interval, Time = max_interval * 1.25 msec
     .appearance = 0x00,
     .manufacturer_len = 0,
     .p_manufacturer_data =  NULL,
@@ -58,134 +65,187 @@ static esp_ble_adv_params_t adv_params = {
     .adv_type           = ADV_TYPE_IND,
     .own_addr_type      = BLE_ADDR_TYPE_PUBLIC,
     .channel_map        = ADV_CHNL_ALL,
-    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    //.adv_filter_policy = ADV_FILTER_ALLOW_SCAN_WLST_CON_WLST,
 };
 
-void gapEventHandler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
-    switch (event) {
-        case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
-        adv_config_done &= (~adv_config_flag);
-        if (adv_config_done == 0){
-            printf("start advertising\n");
-            esp_ble_gap_start_advertising(&adv_params);
-        }
-        break;
-        default:
-        break;
+struct gatts_profile_inst {
+    esp_gatts_cb_t gatts_cb;
+    uint16_t gatts_if;
+    uint16_t app_id;
+    uint16_t conn_id;
+    uint16_t service_handle;
+    esp_gatt_srvc_id_t service_id;
+    uint16_t char_handle;
+    esp_bt_uuid_t char_uuid;
+    esp_gatt_perm_t perm;
+    esp_gatt_char_prop_t property;
+    uint16_t descr_handle;
+    esp_bt_uuid_t descr_uuid;
+};
+static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
+					esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+static struct gatts_profile_inst bms_profile_tab[1] = {
+    [0] = {
+        .gatts_cb = gatts_profile_event_handler,
+        .gatts_if = ESP_GATT_IF_NONE,
+    },
+};
+
+static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
+    // Service Declaration
+    [IDX_INFO_SERVICE]        =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&primary_service_uuid, ESP_GATT_PERM_READ,
+      sizeof(uint16_t), sizeof(battery_service_uuid_), (uint8_t *)&battery_service_uuid_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_BATTERY_VOLTAGE]     =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_BATTERY_VOLTAGE] =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&battery_voltage_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    sizeof(battery_voltage_), sizeof(battery_voltage_), (uint8_t *)&battery_voltage_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_BATTERY_CELL_VOLTAGE]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_BATTERY_CELL_VOLTAGE]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&battery_cell_voltage_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(battery_cell_voltage_), sizeof(battery_cell_voltage_), (uint8_t *)battery_cell_voltage_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_BATTERY_CURRENT]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_BATTERY_CURRENT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&battery_current_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(battery_current_), sizeof(battery_current_), (uint8_t *)&battery_current_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_BALANCING]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_BALANCING]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&enable_balancing_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(enable_balancing_), sizeof(enable_balancing_), (uint8_t *)&enable_balancing_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_CHARGING]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_CHARGING]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&enable_charging_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(enable_charging_), sizeof(enable_charging_), (uint8_t *)&enable_charging_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_FAULT]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_FAULT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&fault_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(fault_), sizeof(fault_), &fault_}},
+
+    /* Client Characteristic Configuration Descriptor */
+    [IDX_CHAR_CFG_FAULT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(uint16_t), sizeof(fault_ccc_), (uint8_t *)fault_ccc_}},    
+};
+
+static const esp_gatts_attr_db_t gatt_parameters_db[PARAM_TABLE_ELEMENT_COUNT] = {
+    // Service Declaration
+    [IDX_PARAM_SERVICE]        =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&primary_service_uuid, ESP_GATT_PERM_READ,
+      sizeof(uint16_t), sizeof(parameters_service_uuid_), (uint8_t *)&parameters_service_uuid_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_SHUNT_RESISTOR]     =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_SHUNT_RESISTOR] =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&shunt_resistor_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    sizeof(shunt_resistor_), sizeof(shunt_resistor_), &shunt_resistor_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_OVERCURRENT_CHARGE]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_OVERCURRENT_CHARGE]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&overcurrent_charge_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(overcurrent_charge_), sizeof(overcurrent_charge_), (uint8_t *)&overcurrent_charge_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_UNDERVOLT]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_UNDERVOLT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&undervolt_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(undervolt_), sizeof(undervolt_), (uint8_t *)&undervolt_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_OVERVOLT]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_OVERVOLT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&overvolt_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(overvolt_), sizeof(overvolt_), (uint8_t *)&overvolt_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_BALANCING_THRESHOLDS]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_BALANCING_THRESHOLDS]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&balancing_thresholds_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(balancing_thresholds_), sizeof(balancing_thresholds_), (uint8_t *)balancing_thresholds_}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_IDLE_CURRENT]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_IDLE_CURRENT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&idle_current_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(idle_current_), sizeof(idle_current_), (uint8_t *)&idle_current_}},
+
+};
+
+
+void createAttributeTables(esp_gatt_if_t gatts_if) {
+    esp_err_t create_attr_ret = esp_ble_gatts_create_attr_tab(gatt_info_db, gatts_if, INFO_TABLE_ITEM_COUNT, 0);
+    
+    if (create_attr_ret){
+        ESP_LOGE(TAG, "create attr table failed, error code = %x", create_attr_ret);
+    }
+
+    create_attr_ret = esp_ble_gatts_create_attr_tab(gatt_parameters_db, gatts_if, PARAM_TABLE_ELEMENT_COUNT, 0);
+    
+    if (create_attr_ret){
+        ESP_LOGE(TAG, "create attr table failed, error code = %x", create_attr_ret);
     }
 }
 
-void addService(esp_gatt_if_t gatts_if) {
-    // Add test service.
-    esp_gatt_srvc_id_t test_service = { .id = { .uuid = { .len = ESP_UUID_LEN_16, .uuid = { battery_service_uuid_ } }, .inst_id = 0x00 }, .is_primary = true };
-    uint16_t test_service_handles_count = 8;
-    esp_ble_gatts_create_service(gatts_if, &test_service, test_service_handles_count);
-}
-
-void onServiceCreated(esp_ble_gatts_cb_param_t::gatts_create_evt_param create) {
-    uint16_t service_handle = create.service_handle;
-    uint16_t service_id = create.service_id.id.uuid.uuid.uuid16;
-    attribute_handles_[service_id] = service_handle;
-    esp_ble_gatts_start_service(service_handle);
-    if(service_id == battery_service_uuid_) {
-        // Add battery voltage charactersitic.
-        esp_bt_uuid_t bat_voltage_char_uuid = { };
-        bat_voltage_char_uuid.len = ESP_UUID_LEN_16;
-        bat_voltage_char_uuid.uuid.uuid16 = battery_voltage_char_uuid_;   
-        esp_attr_value_t bat_value = { .attr_max_len = sizeof(battery_voltage_), .attr_len = sizeof(battery_voltage_), .attr_value = (uint8_t*)&battery_voltage_};
-        esp_err_t add_char_ret = esp_ble_gatts_add_char(service_handle,
-            &bat_voltage_char_uuid,
-            (esp_gatt_perm_t)ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
-            &bat_value,
-            NULL);
-            
-        if (add_char_ret) { 
-            ESP_LOGE(TAG, "Adding characteristic %04X failed, error code =%x", bat_voltage_char_uuid.uuid.uuid16, add_char_ret);
-            return;
-        }
-
-        // Add battery cell voltage description charactersitic.
-        esp_bt_uuid_t CCCD_uuid = { };
-        CCCD_uuid.len = ESP_UUID_LEN_16;
-        CCCD_uuid.uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
-        esp_err_t add_descr_ret = esp_ble_gatts_add_char_descr(service_handle, &CCCD_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, NULL, NULL);
-        if (add_descr_ret) {
-            ESP_LOGE(TAG, "Adding characteristic descriptor failed, error code =%x", add_descr_ret);
-            return;
-        }
-
-        // Add battery cell voltages charactersitic.
-        esp_bt_uuid_t bat_cell_voltage_char_uuid = { };
-        bat_cell_voltage_char_uuid.len = ESP_UUID_LEN_16;
-        bat_cell_voltage_char_uuid.uuid.uuid16 = battery_cell_voltage_char_uuid_;   
-        esp_attr_value_t bat_cell_value = { .attr_max_len = sizeof(battery_cell_voltage_), .attr_len = sizeof(battery_cell_voltage_), .attr_value = (uint8_t*)&battery_cell_voltage_};
-        add_char_ret = esp_ble_gatts_add_char(service_handle,
-            &bat_cell_voltage_char_uuid,
-            (esp_gatt_perm_t)ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
-            &bat_cell_value,
-            NULL);
-            
-        if (add_char_ret) { 
-            ESP_LOGE(TAG, "Adding characteristic %04X failed, error code =%x", bat_cell_voltage_char_uuid.uuid.uuid16, add_char_ret);
-            return;
-        }
-
-        // Add battery cell voltages description charactersitic.
-        esp_bt_uuid_t descr_uuid2 = { };
-        descr_uuid2.len = ESP_UUID_LEN_16;
-        descr_uuid2.uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
-        add_descr_ret = esp_ble_gatts_add_char_descr(service_handle, &descr_uuid2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, NULL, NULL);
-        if (add_descr_ret) {
-            ESP_LOGE(TAG, "Adding characteristic descriptor failed, error code =%x", add_descr_ret);
-            return;
-        }
-        vTaskDelay(40 / portTICK_PERIOD_MS);
-        // Add balancing enabled charactersitic.
-        uint8_t enable_balancing = 1;
-        esp_bt_uuid_t balancing_char_uuid = { };
-        balancing_char_uuid.len = ESP_UUID_LEN_16;
-        balancing_char_uuid.uuid.uuid16 = 0x3007;   
-        esp_attr_value_t enable_balancing_value = { .attr_max_len = sizeof(enable_balancing), .attr_len = sizeof(enable_balancing), .attr_value = (uint8_t*)&enable_balancing};
-        add_char_ret = esp_ble_gatts_add_char(service_handle,
-            &balancing_char_uuid,
-            (esp_gatt_perm_t)ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
-            &enable_balancing_value,
-            NULL);
-            
-        if (add_char_ret) { 
-            ESP_LOGE(TAG, "Adding characteristic %04X failed, error code =%x", balancing_char_uuid.uuid.uuid16, add_char_ret);
-            return;
-        }
-        esp_bt_uuid_t descr_uuid3 = { };
-        descr_uuid3.len = ESP_UUID_LEN_16;
-        descr_uuid3.uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
-        add_descr_ret = esp_ble_gatts_add_char_descr(service_handle, &descr_uuid3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, NULL, NULL);
-        if (add_descr_ret) {
-            ESP_LOGE(TAG, "Adding characteristic descriptor failed, error code =%x", add_descr_ret);
-            return;
-        }
-
-        // Add charging enabled charactersitic.
-        esp_bt_uuid_t charging_char_uuid = { };
-        charging_char_uuid.len = ESP_UUID_LEN_16;
-        charging_char_uuid.uuid.uuid16 = enable_charging_char_uuid_;   
-        esp_attr_value_t enable_charging_value = { .attr_max_len = sizeof(enable_charging_), .attr_len = sizeof(enable_charging_), .attr_value = (uint8_t*)&enable_charging_};
-        add_char_ret = esp_ble_gatts_add_char(service_handle,
-            &charging_char_uuid,
-            (esp_gatt_perm_t)ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
-            &enable_charging_value,
-            NULL);
-            
-        if (add_char_ret) { 
-            ESP_LOGE(TAG, "Adding characteristic %04X failed, error code =%x", charging_char_uuid.uuid.uuid16, add_char_ret);
-            return;
-        }
-    }
-}
 void printBin(unsigned int num, int size) {
     size = 16;
     for (int i = size - 1; i >= 0; i--) {
@@ -205,7 +265,8 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
     memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
     rsp.attr_value.handle = read.handle;
     if(read.handle == attribute_handles_[0x3001]) { // reading of the battery voltage characteristic
-        battery_voltage_ = bms.getBatteryVoltage();
+        // battery_voltage_ = bms.getBatteryVoltage();
+        battery_voltage_ = 42;
         rsp.attr_value.len = 2;
         uint8_t MSByte = battery_voltage_ >> 8;
         uint8_t LSByte = battery_voltage_ & 0xFF;
@@ -216,7 +277,8 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         rsp.attr_value.len = 20;
         uint8_t response_index = 0;
         for (int i = 0; i < 10; i++) {
-            battery_cell_voltage_[i] = bms.getCellVoltage(i + 1);
+            // battery_cell_voltage_[i] = bms.getCellVoltage(i + 1);
+            battery_cell_voltage_[i] = i+1;
             uint8_t MSByte = battery_cell_voltage_[i] >> 8;
             uint8_t LSByte = battery_cell_voltage_[i] & 0xFF;
             rsp.attr_value.value[response_index] = MSByte;
@@ -232,13 +294,11 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
 void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write) {
     //TODO handle write event of the CCCD and the BMS setting characteristics
 }
-void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
     switch (event) {
         case ESP_GATTS_REG_EVT:
             ESP_LOGI("SensorServer", "ESP_GATTS_REG_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
-            //esp_ble_gatts_create_service(gatts_if, &param->reg.app_id, 8);
-            addService(gatts_if);
-            
+            createAttributeTables(gatts_if);
         break;
         case ESP_GATTS_READ_EVT:
             ESP_LOGI("SensorServer", "ESP_GATTS_READ_EVT, conn_id %d, trans_id %"PRIu32", handle %d", param->read.conn_id, param->read.trans_id, param->read.handle);  
@@ -246,38 +306,32 @@ void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, 
         break;
         case ESP_GATTS_WRITE_EVT:
             ESP_LOGI("SensorServer", "ESP_GATTS_WRITE_EVT, conn_id %d, trans_id %"PRIu32", handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
+            onWriteEvent(param->write);
+        break;
 
-        break;
-        case ESP_GATTS_EXEC_WRITE_EVT:
-            ESP_LOGI("SensorServer", "ESP_GATTS_EXEC_WRITE_EVT");
-
-        break;
-        case ESP_GATTS_MTU_EVT:
-        break;
-        case ESP_GATTS_CONF_EVT:
-        break;
-        case ESP_GATTS_UNREG_EVT:
+        case ESP_GATTS_CREAT_ATTR_TAB_EVT:
+            if (param->add_attr_tab.status != ESP_GATT_OK){
+                ESP_LOGE(TAG, "create attribute table failed, error code=0x%x", param->add_attr_tab.status);
+            }
+            else {
+                if(param->add_attr_tab.svc_uuid.uuid.uuid16 == battery_service_uuid_) {
+                    ESP_LOGI(TAG, "create battery info attribute table successfully, number handle = %d\n",param->add_attr_tab.num_handle);
+                    memcpy(info_handle_table, param->add_attr_tab.handles, sizeof(info_handle_table));
+                    esp_ble_gatts_start_service(info_handle_table[IDX_INFO_SERVICE]);
+                } else if(param->add_attr_tab.svc_uuid.uuid.uuid16 == parameters_service_uuid_) {
+                    ESP_LOGI(TAG, "create parameter attribute table successfully, number handle = %d\n",param->add_attr_tab.num_handle);
+                    memcpy(param_handle_table, param->add_attr_tab.handles, sizeof(param_handle_table));
+                    esp_ble_gatts_start_service(param_handle_table[IDX_PARAM_SERVICE]);
+                }
+            }
         
-        break;
-        case ESP_GATTS_CREATE_EVT:
-            ESP_LOGI("SensorServer", "CREATE_SERVICE_EVT, status %d,  service_handle %d", param->create.status, param->create.service_handle);
-            onServiceCreated(param->create);
-        break;
-        case ESP_GATTS_ADD_INCL_SRVC_EVT:
-        break;
-        case ESP_GATTS_ADD_CHAR_EVT:
-            ESP_LOGI("SensorServer", "ADD_CHAR_EVT, status %d,  attr_handle %d, service_handle %d", param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
-            attribute_handles_[param->add_char.char_uuid.uuid.uuid16] = param->add_char.attr_handle;
         break;
         case ESP_GATTS_ADD_CHAR_DESCR_EVT:
         break;
-        case ESP_GATTS_DELETE_EVT:
-        break;
-        case ESP_GATTS_START_EVT:
-        break;
-        case ESP_GATTS_STOP_EVT:
-        break;
         case ESP_GATTS_CONNECT_EVT:
+        ESP_LOGI(TAG, "ESP_GATTS_CONNECT_EVT, conn_id %d, remote %02x:%02x:%02x:%02x:%02x:%02x", param->connect.conn_id,
+                param->connect.remote_bda[0], param->connect.remote_bda[1], param->connect.remote_bda[2],
+                param->connect.remote_bda[3], param->connect.remote_bda[4], param->connect.remote_bda[5]);
         connected_devices_++;
         if(connected_devices_ < max_connected_devices_) {
             esp_ble_gap_start_advertising(&adv_params);
@@ -288,22 +342,35 @@ void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, 
         connected_devices_--;
         esp_ble_gap_start_advertising(&adv_params);
         break;
-        case ESP_GATTS_OPEN_EVT:
-        break;
-        case ESP_GATTS_CANCEL_OPEN_EVT:
-        break;
-        case ESP_GATTS_CLOSE_EVT:
-        break;
-        case ESP_GATTS_LISTEN_EVT:
-        break;
-        case ESP_GATTS_CONGEST_EVT:
-        break;
         case ESP_GATTS_RESPONSE_EVT:
         break;
         default:
         break;
     }
 }
+
+static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+    printf("event = %d\n", event);
+    /* If event is register event, store the gatts_if for each profile */
+    if (event == ESP_GATTS_REG_EVT) {
+        printf("ESP_GATTS_REG_EVT\n");
+        if (param->reg.status == ESP_GATT_OK) {
+            bms_profile_tab[0].gatts_if = gatts_if;
+        } else {
+            ESP_LOGE(TAG, "reg app failed, app_id %04x, status %d",
+                    param->reg.app_id,
+                    param->reg.status);
+            return;
+        }
+    }
+    int idx = 0;
+    if (gatts_if == ESP_GATT_IF_NONE || gatts_if == bms_profile_tab[idx].gatts_if) {
+        if (bms_profile_tab[idx].gatts_cb) {
+            bms_profile_tab[idx].gatts_cb(event, gatts_if, param);
+        }
+    }
+}
+
 bool bluetoothInit() {
     esp_err_t ret;
     ret = nvs_flash_init();
@@ -336,17 +403,14 @@ bool bluetoothInit() {
         ESP_LOGE(TAG, "%s enable bluetooth failed: %s", __func__, esp_err_to_name(ret));
         return false;
     }
-    ret = esp_ble_gap_register_callback(gapEventHandler);
-    if (ret) {
-        ESP_LOGE(TAG, "gap register error, error code = %x", ret);
-        return false;
-    }
-    ret = esp_ble_gatts_register_callback(gattServerEventHandler);
+    
+    ret = esp_ble_gatts_register_callback(gatts_event_handler);
     if (ret) {
         ESP_LOGE(TAG, "gatts register error, error code = %x", ret);
         return false;
+    
     }
-    ret = esp_ble_gatts_app_register(PROFILE_A_APP_ID);
+    ret = esp_ble_gatts_app_register(PROFILE_APP_ID);
     if (ret){
         ESP_LOGE(TAG, "gatts app register error, error code = %x", ret);
         return false;
@@ -364,33 +428,25 @@ bool bluetoothInit() {
     return true;
 }
 
-void configAdvData() {
-    esp_err_t ret = esp_ble_gap_config_adv_data(&adv_data);
-    if (ret){
-        ESP_LOGE(TAG, "config adv data failed, error code = %x", ret);
-    }
-    adv_config_done |= adv_config_flag;
-}
-void bmsUpdateTask(void *pvParameters) {
-    while (1) {
-        bms.update();
-        //battery_voltage = bms.getBatteryVoltage();
-    }
-}
+// void bmsUpdateTask(void *pvParameters) {
+//     while (1) {
+//         // bms.update();
+//         //battery_voltage = bms.getBatteryVoltage();
+//     }
+// }
 
 void app_main(void) {
-    bms.initialize(alert_pin, boot_pin);
-    bms.setTemperatureLimits(-20, 45, 0, 45);
-    bms.setShuntResistorValue(5);
-    bms.setOvercurrentChargeProtection(5000);
-    bms.setCellUndervoltageProtection(3200, 2);
-    bms.setCellOvervoltageProtection(4240, 2);
-    bms.setBalancingThresholds(0, 3700, 15);
-    bms.setIdleCurrentThreshold(100);
-    xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
+    // bms.initialize(alert_pin, boot_pin);
+    // bms.setShuntResistorValue(5);
+    // bms.setOvercurrentChargeProtection(5000);
+    // bms.setCellUndervoltageProtection(3200, 2);
+    // bms.setCellOvervoltageProtection(4240, 2);
+    // bms.setBalancingThresholds(0, 3700, 15);
+    // bms.setIdleCurrentThreshold(100);
+    // xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
     bluetoothInit();
-    configAdvData();
-    // esp_ble_gatts_create_service(ESP_GATT_IF_NONE)
+    esp_ble_gap_config_adv_data(&adv_data);
+    esp_ble_gap_start_advertising(&adv_params);
 
     // while (1) {
     //     bms.update();
