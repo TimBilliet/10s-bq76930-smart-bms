@@ -54,7 +54,7 @@ dkms.conf
 Project Logs for BMS
 History
 __Previews
-build
+build/
 sdkconfig
 sdkconfig.old
 
