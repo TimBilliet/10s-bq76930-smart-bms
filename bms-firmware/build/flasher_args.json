@@ -19,6 +19,6 @@
         "after"  : "hard_reset",
         "before" : "default_reset",
         "stub"   : true,
-        "chip"   : "esp32c3"
+        "chip"   : "esp32s3"
     }
 }

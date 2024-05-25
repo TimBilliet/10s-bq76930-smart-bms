@@ -1,4 +1,4 @@
-C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/riscv/libriscv.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/xtensa/libxtensa.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/esp_ringbuf/libesp_ringbuf.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/efuse/libefuse.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/driver/libdriver.a
@@ -33,6 +33,7 @@ C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/wpa_supplicant/libwpa_supplicant.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/esp_coex/libesp_coex.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/esp_wifi/libesp_wifi.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/bt/libbt.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/unity/libunity.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/cmock/libcmock.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/console/libconsole.a
@@ -56,6 +57,11 @@ C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/fatfs/libfatfs.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/json/libjson.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/mqtt/libmqtt.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/perfmon/libperfmon.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/spiffs/libspiffs.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/touch_element/libtouch_element.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/ulp/libulp.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/usb/libusb.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
 C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/main/libmain.a
+C:/Users/Tim/Documents/Github repositories/diy-10s-smart-bms/bms-firmware/build/esp-idf/bq76930/libbq76930.a
