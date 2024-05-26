@@ -83,13 +83,10 @@ struct gatts_profile_inst {
     uint16_t descr_handle;
     esp_bt_uuid_t descr_uuid;
 };
-static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
-					esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
-static struct gatts_profile_inst bms_profile_tab[1] = {
-    [0] = {
-        .gatts_cb = gatts_profile_event_handler,
-        .gatts_if = ESP_GATT_IF_NONE,
-    },
+static void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+static struct gatts_profile_inst bms_profile_tab = {
+    .gatts_cb = gattServerEventHandler,
+    .gatts_if = ESP_GATT_IF_NONE,
 };
 
 static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
@@ -267,7 +264,6 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
     rsp.attr_value.handle = read.handle;
 
     if(read.handle == info_handle_table_[IDX_CHAR_VAL_BATTERY_VOLTAGE]) { // reading of the battery voltage characteristic
-    printf("battery voltage read");
         // battery_voltage_ = bms.getBatteryVoltage();
         battery_voltage_ = 42;
         rsp.attr_value.len = 2;
@@ -297,14 +293,62 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         //TODO handle read event of the charging characteristic
     } else if(read.handle == info_handle_table_[IDX_CHAR_VAL_FAULT]) { // reading of the fault characteristic
         //TODO handle read event of the fault characteristic
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_SHUNT_RESISTOR]) { //reading of the shunt resistor characteristic
+        //TODP handle read event of the shunt resistor characteristic
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_OVERCURRENT_CHARGE]) { //reading of the overcurrent charge characteristic
+        //TODO handle read event of the overcurrent charge characteristic
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_UNDERVOLT]) { //reading of the undervoltage characteristic
+        //TODO handle read event of the undervolt characteristic
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_OVERVOLT]) { //reading of the overvoltage characteristic
+        //TODO handle read event of the overvolt characteristic
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_BALANCING_THRESHOLDS]) { //reading of the balancing thresholds characteristic
+        //TODO handle read event of the balancing thresholds characteristic
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_IDLE_CURRENT]) { //reading of the idle current characteristic
+        //TODO handle read event of the idle current characteristic
+    } else {
+        ESP_LOGE(TAG, "Unknown read handle");
     }
 }
 
-void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write) {
-    //TODO handle write event of the CCCD and the BMS setting characteristics
+void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gatt_if_t gatts_if) {
+    if(!write.is_prep) {
+        ESP_LOGI(TAG, "GATT_WRITE_EVT, value len %d, value :", write.len);
+        ESP_LOG_BUFFER_HEX(TAG, write.value, write.len);
+        if(info_handle_table_[IDX_CHAR_VAL_BALANCING] == write.handle && write.len == 1) {
+            printf("balancing val");
+        } else if(info_handle_table_[IDX_CHAR_VAL_CHARGING] == write.handle && write.len == 1) {
+            printf("charging val");
+        } else if(info_handle_table_[IDX_CHAR_CFG_FAULT] == write.handle ) {
+            uint16_t descr_value = write.value[1]<<8 | write.value[0];
+            if (descr_value == 0x0001){
+                ESP_LOGI(TAG, "notify enable");
+            } else if (descr_value == 0x0002){
+                ESP_LOGI(TAG, "indicate enable");
+            } else if (descr_value == 0x0000){
+                ESP_LOGI(TAG, "notify/indicate disable ");
+            }
+        } else if(param_handle_table_[IDX_CHAR_VAL_SHUNT_RESISTOR] == write.handle) {
+
+        } else if(param_handle_table_[IDX_CHAR_VAL_OVERCURRENT_CHARGE] == write.handle){
+
+        } else if(param_handle_table_[IDX_CHAR_VAL_UNDERVOLT] == write.handle){
+
+        } else if(param_handle_table_[IDX_CHAR_VAL_OVERVOLT] == write.handle){
+
+        } else if(param_handle_table_[IDX_CHAR_VAL_BALANCING_THRESHOLDS] == write.handle){
+
+        } else if(param_handle_table_[IDX_CHAR_VAL_IDLE_CURRENT] == write.handle){
+
+        }
+        if (write.need_rsp){
+            esp_ble_gatts_send_response(gatts_if, write.conn_id, write.trans_id, ESP_GATT_OK, NULL);
+        }
+    } else {
+        ESP_LOGI(TAG, "WRITE PREP");
+    }
 }
 
-static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+static void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
     switch (event) {
         case ESP_GATTS_REG_EVT:
             ESP_LOGI("SensorServer", "ESP_GATTS_REG_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
@@ -316,7 +360,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         break;
         case ESP_GATTS_WRITE_EVT:
             ESP_LOGI("SensorServer", "ESP_GATTS_WRITE_EVT, conn_id %d, trans_id %"PRIu32", handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
-            onWriteEvent(param->write);
+            onWriteEvent(param->write, gatts_if);
         break;
 
         case ESP_GATTS_CREAT_ATTR_TAB_EVT:
@@ -336,21 +380,19 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             }
         
         break;
-        case ESP_GATTS_ADD_CHAR_DESCR_EVT:
-        break;
         case ESP_GATTS_CONNECT_EVT:
-        ESP_LOGI(TAG, "ESP_GATTS_CONNECT_EVT, conn_id %d, remote %02x:%02x:%02x:%02x:%02x:%02x", param->connect.conn_id,
-                param->connect.remote_bda[0], param->connect.remote_bda[1], param->connect.remote_bda[2],
-                param->connect.remote_bda[3], param->connect.remote_bda[4], param->connect.remote_bda[5]);
-        connected_devices_++;
-        if(connected_devices_ < max_connected_devices_) {
-            esp_ble_gap_start_advertising(&adv_params);
-        }     
+            ESP_LOGI(TAG, "ESP_GATTS_CONNECT_EVT, conn_id %d, remote %02x:%02x:%02x:%02x:%02x:%02x", param->connect.conn_id,
+                    param->connect.remote_bda[0], param->connect.remote_bda[1], param->connect.remote_bda[2],
+                    param->connect.remote_bda[3], param->connect.remote_bda[4], param->connect.remote_bda[5]);
+            connected_devices_++;
+            if(connected_devices_ < max_connected_devices_) {
+                esp_ble_gap_start_advertising(&adv_params);
+            }     
         break;
         case ESP_GATTS_DISCONNECT_EVT:
-        ESP_LOGI(TAG, "ESP_GATTS_DISCONNECT_EVT, disconnect reason 0x%x", param->disconnect.reason);
-        connected_devices_--;
-        esp_ble_gap_start_advertising(&adv_params);
+            ESP_LOGI(TAG, "ESP_GATTS_DISCONNECT_EVT, disconnect reason 0x%x", param->disconnect.reason);
+            connected_devices_--;
+            esp_ble_gap_start_advertising(&adv_params);
         break;
         case ESP_GATTS_RESPONSE_EVT:
         break;
@@ -360,12 +402,11 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 }
 
 static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-    printf("event = %d\n", event);
-    /* If event is register event, store the gatts_if for each profile */
+    /* If event is register event, store the gatts_if */
     if (event == ESP_GATTS_REG_EVT) {
         printf("ESP_GATTS_REG_EVT\n");
         if (param->reg.status == ESP_GATT_OK) {
-            bms_profile_tab[0].gatts_if = gatts_if;
+            bms_profile_tab.gatts_if = gatts_if;
         } else {
             ESP_LOGE(TAG, "reg app failed, app_id %04x, status %d",
                     param->reg.app_id,
@@ -373,10 +414,9 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
             return;
         }
     }
-    int idx = 0;
-    if (gatts_if == ESP_GATT_IF_NONE || gatts_if == bms_profile_tab[idx].gatts_if) {
-        if (bms_profile_tab[idx].gatts_cb) {
-            bms_profile_tab[idx].gatts_cb(event, gatts_if, param);
+    if (gatts_if == ESP_GATT_IF_NONE || gatts_if == bms_profile_tab.gatts_if) {
+        if (bms_profile_tab.gatts_cb) {
+            bms_profile_tab.gatts_cb(event, gatts_if, param);
         }
     }
 }
