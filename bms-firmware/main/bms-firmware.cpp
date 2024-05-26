@@ -121,7 +121,7 @@ static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
     /* Characteristic Value */
     [IDX_CHAR_VAL_BATTERY_CURRENT]  =
     {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&battery_current_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      sizeof(battery_current_), sizeof(battery_current_), (uint8_t *)&battery_current_}},
+      sizeof(charge_current_), sizeof(charge_current_), (uint8_t *)&charge_current_}},
 
     /* Characteristic Declaration */
     [IDX_CHAR_BALANCING]      =
@@ -269,43 +269,72 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         uint8_t LSByte = battery_voltage_ & 0xFF;
         rsp.attr_value.value[0] = MSByte;
         rsp.attr_value.value[1] = LSByte;
-        esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
     } else if (read.handle == info_handle_table_[IDX_CHAR_VAL_BATTERY_CELL_VOLTAGE]) { // reading of the battery cell voltage characteristic
         rsp.attr_value.len = 20;
         uint8_t response_index = 0;
         for (int i = 0; i < 10; i++) {
             // battery_cell_voltage_[i] = bms.getCellVoltage(i + 1);
-            battery_cell_voltage_[i] = i+1;
             uint8_t MSByte = battery_cell_voltage_[i] >> 8;
             uint8_t LSByte = battery_cell_voltage_[i] & 0xFF;
             rsp.attr_value.value[response_index] = MSByte;
             rsp.attr_value.value[response_index + 1] = LSByte;
             response_index += 2;
         }
-        esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
     } else if (read.handle == info_handle_table_[IDX_CHAR_VAL_BATTERY_CURRENT]) { // reading of the charge current characteristic
-        //TODO handle read event of the charge current characteristic
+        //charge_current_ = bms.getBatteryCurrent();
+        charge_current_ = 4;
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = charge_current_;
     } else if(read.handle == info_handle_table_[IDX_CHAR_VAL_BALANCING]) { // reading of the balancing characteristic
-        //TODO handle read event of the balancing characteristic
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = enable_balancing_;
     } else if(read.handle == info_handle_table_[IDX_CHAR_VAL_CHARGING]) { // reading of the charging characteristic
-        //TODO handle read event of the charging characteristic
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = enable_charging_;
     } else if(read.handle == info_handle_table_[IDX_CHAR_VAL_FAULT]) { // reading of the fault characteristic
-        //TODO handle read event of the fault characteristic
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = fault_;
     } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_SHUNT_RESISTOR]) { //reading of the shunt resistor characteristic
-        //TODP handle read event of the shunt resistor characteristic
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = shunt_resistor_;
     } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_OVERCURRENT_CHARGE]) { //reading of the overcurrent charge characteristic
-        //TODO handle read event of the overcurrent charge characteristic
+        rsp.attr_value.len = 2;
+        uint8_t MSByte = overcurrent_charge_ >> 8;
+        uint8_t LSByte = overcurrent_charge_ & 0xFF;
+        rsp.attr_value.value[0] = MSByte;
+        rsp.attr_value.value[1] = LSByte;
     } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_UNDERVOLT]) { //reading of the undervoltage characteristic
-        //TODO handle read event of the undervolt characteristic
+        rsp.attr_value.len = 2;
+        uint8_t MSByte = undervolt_ >> 8;
+        uint8_t LSByte = undervolt_ & 0xFF;
+        rsp.attr_value.value[0] = MSByte;
+        rsp.attr_value.value[1] = LSByte;
     } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_OVERVOLT]) { //reading of the overvoltage characteristic
-        //TODO handle read event of the overvolt characteristic
+        rsp.attr_value.len = 2;
+        uint8_t MSByte = overvolt_ >> 8;
+        uint8_t LSByte = overvolt_ & 0xFF;
+        rsp.attr_value.value[0] = MSByte;
+        rsp.attr_value.value[1] = LSByte;
     } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_BALANCING_THRESHOLDS]) { //reading of the balancing thresholds characteristic
-        //TODO handle read event of the balancing thresholds characteristic
+        rsp.attr_value.len = 4;
+        uint8_t response_index = 0;
+        for (int i = 0; i < 2; i++) {
+            uint8_t MSByte = balancing_thresholds_[i] >> 8;
+            uint8_t LSByte = balancing_thresholds_[i] & 0xFF;
+            rsp.attr_value.value[response_index] = MSByte;
+            rsp.attr_value.value[response_index + 1] = LSByte;
+            response_index += 2;
+        }
     } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_IDLE_CURRENT]) { //reading of the idle current characteristic
-        //TODO handle read event of the idle current characteristic
+        rsp.attr_value.len = 2;
+        uint8_t MSByte = idle_current_ >> 8;
+        uint8_t LSByte = idle_current_ & 0xFF;
+        rsp.attr_value.value[0] = MSByte;
+        rsp.attr_value.value[1] = LSByte;
     } else {
         ESP_LOGE(TAG, "Unknown read handle");
     }
+    esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
 }
 
 void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gatt_if_t gatts_if) {
