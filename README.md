@@ -8,6 +8,11 @@ There is a header for connecting servo signals and a mosfet to switch 12V leds. 
 The programming circuitry for the ESP32-C3 is on an external board to save space.\
 There is also a power latch circuit with a button and the mcu can turn power to itself off.
 
+## Cloning
+Clone with this command to also get the bq76930 driver component
+```
+git clone https://github.com/TimBilliet/10s-bq76930-smart-bms.git --recurse-submodules
+```
 ![image](https://github.com/TimBilliet/10s-bq76930-smart-bms/assets/47719114/006d26ed-25e1-4275-9ca6-337fc7d32524)
 
 ## DONE:
