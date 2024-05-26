@@ -7,13 +7,12 @@ uint8_t connected_devices_ = 0;
 uint16_t battery_voltage_ = 0;
 //uint16_t battery_cell_voltage_[10] = {0};
 uint16_t battery_cell_voltage_[10] = {3501, 3628, 3967, 3321, 4134, 3800, 4102, 3267, 3790, 3938};
-
 uint16_t charge_current_ = 0;
-
 bool enable_balancing_ = true;
 bool enable_charging_ = false;
-
 uint8_t fault_ = 0;
+
+bool fault_notifications_enabled_ = false;
 
 uint8_t shunt_resistor_ = 5;
 uint16_t overcurrent_charge_ = 0;

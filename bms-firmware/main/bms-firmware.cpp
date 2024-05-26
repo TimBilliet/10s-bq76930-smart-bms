@@ -342,30 +342,40 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         ESP_LOGI(TAG, "GATT_WRITE_EVT, value len %d, value :", write.len);
         ESP_LOG_BUFFER_HEX(TAG, write.value, write.len);
         if(info_handle_table_[IDX_CHAR_VAL_BALANCING] == write.handle && write.len == 1) {
-            printf("balancing val");
+            enable_balancing_ = static_cast<bool>(write.value);
         } else if(info_handle_table_[IDX_CHAR_VAL_CHARGING] == write.handle && write.len == 1) {
-            printf("charging val");
+            enable_charging_ = static_cast<bool>(write.value);
         } else if(info_handle_table_[IDX_CHAR_CFG_FAULT] == write.handle ) {
             uint16_t descr_value = write.value[1]<<8 | write.value[0];
             if (descr_value == 0x0001){
                 ESP_LOGI(TAG, "notify enable");
+                fault_notifications_enabled_ = true;
             } else if (descr_value == 0x0002){
                 ESP_LOGI(TAG, "indicate enable");
+                fault_notifications_enabled_ = true;
             } else if (descr_value == 0x0000){
                 ESP_LOGI(TAG, "notify/indicate disable ");
+                fault_notifications_enabled_ = false;
             }
-        } else if(param_handle_table_[IDX_CHAR_VAL_SHUNT_RESISTOR] == write.handle) {
-
+        } else if(param_handle_table_[IDX_CHAR_VAL_SHUNT_RESISTOR] == write.handle && write.len == 1) {
+            shunt_resistor_ = write.value[0];
+            // bms.setShuntResistorValue(shunt_resistor_);
         } else if(param_handle_table_[IDX_CHAR_VAL_OVERCURRENT_CHARGE] == write.handle){
-
+            overcurrent_charge_ = write.value[1]<<8 | write.value[0];
+            // bms.setOvercurrentChargeProtection(overcurrent_charge_);
         } else if(param_handle_table_[IDX_CHAR_VAL_UNDERVOLT] == write.handle){
-
+            undervolt_ = write.value[1]<<8 | write.value[0];
+            // bms.setCellUndervoltageProtection(undervolt_, 2);
         } else if(param_handle_table_[IDX_CHAR_VAL_OVERVOLT] == write.handle){
-
+            overvolt_ = write.value[1]<<8 | write.value[0];
+            // bms.setCellOvervoltageProtection(overvolt_, 2);
         } else if(param_handle_table_[IDX_CHAR_VAL_BALANCING_THRESHOLDS] == write.handle){
-
+            balancing_thresholds_[0] = write.value[1]<<8 | write.value[0];
+            balancing_thresholds_[1] = write.value[3]<<8 | write.value[2];
+            // bms.setBalancingThresholds(balancing_thresholds_[0], balancing_thresholds_[1]);
         } else if(param_handle_table_[IDX_CHAR_VAL_IDLE_CURRENT] == write.handle){
-
+            idle_current_ = write.value[1]<<8 | write.value[0];
+            // bms.setIdleCurrentThreshold(idle_current_);
         }
         if (write.need_rsp){
             esp_ble_gatts_send_response(gatts_if, write.conn_id, write.trans_id, ESP_GATT_OK, NULL);
@@ -505,12 +515,18 @@ bool bluetoothInit() {
     return true;
 }
 
-// void bmsUpdateTask(void *pvParameters) {
-//     while (1) {
-//         // bms.update();
-//         //battery_voltage = bms.getBatteryVoltage();
-//     }
-// }
+void bmsUpdateTask(void *pvParameters) {
+    while (1) {
+        // bms.update();
+        //battery_voltage_ = bms.getBatteryVoltage();
+        // uint8_t fault_ = bms.getErrorState();
+        // if (fault_ != 0) {
+        //     if(fault_notifications_enabled_) {
+        //         esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, 0, info_handle_table_[IDX_CHAR_VAL_FAULT], 1, &fault_, false);
+        //     }
+        // }
+    }
+}
 
 void app_main(void) {
     // bms.initialize(alert_pin, boot_pin);

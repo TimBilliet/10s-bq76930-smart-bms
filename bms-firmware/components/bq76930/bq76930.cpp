@@ -171,6 +171,9 @@ void bq76930::setAlertInterruptFlag() {
   interrupt_timestamp_ = (uint32_t)(esp_timer_get_time() / 1000);
   alert_interrupt_flag_ = true;
 }
+int bq76930::getErrorState() {
+    return error_state_;
+}
 
 void IRAM_ATTR bq76930::alertISR(void* data) {
   if (instance_pointer_ != 0)
