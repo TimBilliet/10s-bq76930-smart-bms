@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <map>
 
-std::map<uint16_t, uint16_t> attribute_handles_;
-
 uint8_t max_connected_devices_ = 1;
 uint8_t connected_devices_ = 0;
 
@@ -83,7 +81,7 @@ enum {
     IDX_CHAR_IDLE_CURRENT,
     IDX_CHAR_VAL_IDLE_CURRENT,
 
-    PARAM_TABLE_ELEMENT_COUNT,
+    PARAM_TABLE_ITEM_COUNT,
 };
 
 
