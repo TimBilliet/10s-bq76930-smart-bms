@@ -20,8 +20,6 @@ extern "C" {void app_main(void);}
 #define TAG "SmartBMS-main"
 #define CHAR_DECLARATION_SIZE       (sizeof(uint8_t))
 
-#define PROFILE_APP_ID 0
-
 int sda_pin = 5;
 int scl_pin = 4;
 
@@ -460,7 +458,7 @@ bool bluetoothInit() {
         return false;
     
     }
-    ret = esp_ble_gatts_app_register(PROFILE_APP_ID);
+    ret = esp_ble_gatts_app_register(0);
     if (ret){
         ESP_LOGE(TAG, "gatts app register error, error code = %x", ret);
         return false;
