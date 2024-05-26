@@ -1,0 +1,3 @@
+[submodule "bms-firmware/components/bq76930"]
+	path = bms-firmware/components/bq76930
+	url = https://github.com/TimBilliet/bq76930
