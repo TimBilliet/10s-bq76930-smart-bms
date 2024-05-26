@@ -1,4 +1,0 @@
-dependencies:
-  bq76930:
-    version: "*"
-    override_path: '../../../'

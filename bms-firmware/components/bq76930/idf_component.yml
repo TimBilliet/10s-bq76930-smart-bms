@@ -1,6 +1,0 @@
-version: 0.0.1
-
-description: BQ76930 I2C driver
-
-dependencies:
-  idf: ">=4.4.0"
