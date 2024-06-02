@@ -18,9 +18,9 @@ git clone https://github.com/TimBilliet/10s-bq76930-smart-bms.git --recurse-subm
 ## DONE:
 Testing the cell voltage reading function(tested with existing Arduino library)\
 Testing charge fet cutoff when overvoltage occurs(tested with existing Arduino library)\
-Testing led mosfet (works, so does pwm dimming)
+Testing led mosfet (works, so does pwm dimming)\
+Writing BQ76930 esp-idf driver
 
 ## TODO:
 Write app\
-Write BQ76930 esp-idf driver\
 Write firmware
