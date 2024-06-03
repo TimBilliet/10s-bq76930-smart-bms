@@ -26,11 +26,11 @@ int scl_pin = 4;
 int boot_pin = 6;
 int alert_pin = 7;
 
+int keep_on_pin = 1;
+
 uint8_t address = 0x08;
 
 bq76930 bms(address, sda_pin, scl_pin);
-
-const char *ble_device_name = "SmartBMS";
 
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
 static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
@@ -42,6 +42,7 @@ static const uint8_t char_prop_read_write_notify   = ESP_GATT_CHAR_PROP_BIT_WRIT
 
 uint16_t info_handle_table_[INFO_TABLE_ITEM_COUNT];
 uint16_t param_handle_table_[PARAM_TABLE_ITEM_COUNT];
+
 
 static esp_ble_adv_data_t adv_data = {
     .set_scan_rsp = false,
@@ -236,6 +237,26 @@ static const esp_gatts_attr_db_t gatt_parameters_db[PARAM_TABLE_ITEM_COUNT] = {
     {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&idle_current_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(idle_current_), sizeof(idle_current_), (uint8_t *)&idle_current_}},
 
+       /* Characteristic Declaration */
+    [IDX_CHAR_POWER_ON]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_POWER_ON]  =
+    {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&power_on_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(power_on_), sizeof(power_on_), (uint8_t *)&power_on_}},
+
+       /* Characteristic Declaration */
+    [IDX_CHAR_ONLY_BALANCE_WHEN_CHARGING]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_ONLY_BALANCE_WHEN_CHARGING]  =
+    {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&only_balance_when_charging_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(only_balance_when_charging_), sizeof(only_balance_when_charging_), (uint8_t *)&only_balance_when_charging_}},
+
 };
 
 
@@ -346,7 +367,14 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         uint8_t LSByte = idle_current_ & 0xFF;
         rsp.attr_value.value[0] = MSByte;
         rsp.attr_value.value[1] = LSByte;
-    } else {
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_POWER_ON]) {  //reading of the power on characteristic
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = power_on_;
+    } else if(read.handle == param_handle_table_[IDX_CHAR_VAL_ONLY_BALANCE_WHEN_CHARGING]) {
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = only_balance_when_charging_;
+    }
+    else {
         ESP_LOGE(TAG, "Unknown read handle");
     }
     esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
@@ -391,6 +419,14 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         } else if(param_handle_table_[IDX_CHAR_VAL_IDLE_CURRENT] == write.handle){
             idle_current_ = write.value[1]<<8 | write.value[0];
             bms.setIdleCurrentThreshold(idle_current_);
+        } else if(param_handle_table_[IDX_CHAR_VAL_POWER_ON] == write.handle){
+            power_on_ = write.value[0];
+            if(power_on_ == 0) {
+                bms.shutdown();
+                gpio_set_level((gpio_num_t)1,power_on_);
+            }
+        } else if(param_handle_table_[IDX_CHAR_VAL_ONLY_BALANCE_WHEN_CHARGING] == write.handle){
+            only_balance_when_charging_ = write.value[0];
         }
         if (write.need_rsp){
             esp_ble_gatts_send_response(gatts_if, write.conn_id, write.trans_id, ESP_GATT_OK, NULL);
@@ -533,15 +569,25 @@ bool bluetoothInit() {
 void bmsUpdateTask(void *pvParameters) {
     while (1) {
         bms.update();
-        //battery_voltage_ = bms.getBatteryVoltage();
         uint8_t fault_ = bms.getErrorState();
         if (fault_ != 0 && fault_notifications_enabled_) {
             esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, 0, info_handle_table_[IDX_CHAR_VAL_FAULT], 1, &fault_, false);
+        }
+        if(only_balance_when_charging_) {
+            if(bms.getBatteryCurrent() > 0) {
+                bms.toggleBalancing(true);
+            } else {
+                bms.toggleBalancing(false);
+            }
+        } else {
+            bms.toggleBalancing(true);
         }
     }
 }
 
 void app_main(void) {
+    gpio_set_direction((gpio_num_t)1, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)1,power_on_);
     bms.initialize(alert_pin, boot_pin);
     bms.setShuntResistorValue(5);
     bms.setOvercurrentChargeProtection(5000);
@@ -549,6 +595,8 @@ void app_main(void) {
     bms.setCellOvervoltageProtection(4240, 2);
     bms.setBalancingThresholds(0, 3700, 10);
     bms.setIdleCurrentThreshold(100);
+    bms.toggleBalancing(true);
+    bms.toggleCharging(true);
     xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
     bluetoothInit();
     esp_ble_gap_config_adv_data(&adv_data);

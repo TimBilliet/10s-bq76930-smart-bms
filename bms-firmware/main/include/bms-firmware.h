@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <map>
 
+const char *ble_device_name = "SmartBMS";
+
 uint8_t max_connected_devices_ = 1;
 uint8_t connected_devices_ = 0;
 
@@ -11,15 +13,17 @@ uint16_t charge_current_ = 0;
 bool enable_balancing_ = true;
 bool enable_charging_ = false;
 uint8_t fault_ = 0;
+bool power_on_ = true;
+bool only_balance_when_charging_ = true;
 
 bool fault_notifications_enabled_ = false;
 
-uint8_t shunt_resistor_ = 5;
-uint16_t overcurrent_charge_ = 10000;
-uint16_t undervolt_ = 3000;
-uint16_t overvolt_ = 4200;
-uint16_t balancing_thresholds_[2] = {3700, 15};
-uint16_t idle_current_ = 100;
+uint8_t shunt_resistor_ = 5; // mOhm
+uint16_t overcurrent_charge_ = 10000; // mA
+uint16_t undervolt_ = 3000; // mV
+uint16_t overvolt_ = 4200; // mV
+uint16_t balancing_thresholds_[2] = {3900, 15}; // mV, ms
+uint16_t idle_current_ = 100; // mA
 
 const uint16_t battery_service_uuid_ = 0x3000;
 const uint16_t battery_voltage_char_uuid_ = 0x3001;
@@ -38,6 +42,8 @@ const uint16_t undervolt_char_uuid_ = 0x4003;
 const uint16_t overvolt_char_uuid_ = 0x4004;
 const uint16_t balancing_thresholds_char_uuid_ = 0x4005;
 const uint16_t idle_current_char_uuid_ = 0x4006;
+const uint16_t power_on_char_uuid_ = 0x4007;
+const uint16_t only_balance_when_charging_char_uuid_ = 0x4008;
 
 enum {
     IDX_INFO_SERVICE,
@@ -85,6 +91,12 @@ enum {
 
     IDX_CHAR_IDLE_CURRENT,
     IDX_CHAR_VAL_IDLE_CURRENT,
+
+    IDX_CHAR_POWER_ON,
+    IDX_CHAR_VAL_POWER_ON,
+
+    IDX_CHAR_ONLY_BALANCE_WHEN_CHARGING,
+    IDX_CHAR_VAL_ONLY_BALANCE_WHEN_CHARGING,
 
     PARAM_TABLE_ITEM_COUNT,
 };
