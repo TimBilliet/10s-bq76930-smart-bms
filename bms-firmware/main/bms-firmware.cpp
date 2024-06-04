@@ -319,8 +319,11 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         }
     } else if (read.handle == info_handle_table_[IDX_CHAR_VAL_BATTERY_CURRENT]) { // reading of the charge current characteristic
         charge_current_ = bms.getBatteryCurrent();
-        rsp.attr_value.len = 1;
-        rsp.attr_value.value[0] = charge_current_;
+        rsp.attr_value.len = 2;
+        uint8_t MSByte = charge_current_ >> 8;
+        uint8_t LSByte = charge_current_ & 0xFF;
+        rsp.attr_value.value[0] = MSByte;
+        rsp.attr_value.value[1] = LSByte;
     } else if(read.handle == info_handle_table_[IDX_CHAR_VAL_BALANCING]) { // reading of the balancing characteristic
         rsp.attr_value.len = 1;
         rsp.attr_value.value[0] = enable_balancing_;
