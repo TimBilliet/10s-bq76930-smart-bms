@@ -388,10 +388,10 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         ESP_LOGI(TAG, "GATT_WRITE_EVT, value len %d, value :", write.len);
         ESP_LOG_BUFFER_HEX(TAG, write.value, write.len);
         if(info_handle_table_[IDX_CHAR_VAL_BALANCING] == write.handle && write.len == 1) {
-            enable_balancing_ = static_cast<bool>(write.value);
+            enable_balancing_ = (bool)(write.value[0]);
             bms.toggleBalancing(enable_balancing_);
         } else if(info_handle_table_[IDX_CHAR_VAL_CHARGING] == write.handle && write.len == 1) {
-            enable_charging_ = static_cast<bool>(write.value);
+            enable_charging_ = static_cast<bool>(write.value[0]);
             bms.toggleCharging(enable_charging_);
         } else if(info_handle_table_[IDX_CHAR_CFG_FAULT] == write.handle ) {
             uint16_t descr_value = write.value[1]<<8 | write.value[0];
@@ -581,11 +581,11 @@ void bmsUpdateTask(void *pvParameters) {
         if(only_balance_when_charging_) {
             if(bms.getBatteryCurrent() > 0) {
                 bms.toggleBalancing(true);
+                enable_balancing_ = true;
             } else {
                 bms.toggleBalancing(false);
+                enable_balancing_ = false;
             }
-        } else {
-            bms.toggleBalancing(true);
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
