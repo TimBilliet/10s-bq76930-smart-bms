@@ -389,8 +389,10 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         ESP_LOG_BUFFER_HEX(TAG, write.value, write.len);
         if(info_handle_table_[IDX_CHAR_VAL_BALANCING] == write.handle && write.len == 1) {
             enable_balancing_ = static_cast<bool>(write.value);
+            bms.setBalancing(enable_balancing_);
         } else if(info_handle_table_[IDX_CHAR_VAL_CHARGING] == write.handle && write.len == 1) {
             enable_charging_ = static_cast<bool>(write.value);
+            bms.setCharging(enable_charging_);
         } else if(info_handle_table_[IDX_CHAR_CFG_FAULT] == write.handle ) {
             uint16_t descr_value = write.value[1]<<8 | write.value[0];
             if (descr_value == 0x0001){
@@ -599,8 +601,8 @@ void app_main(void) {
     bms.setCellOvervoltageProtection(4240, 2);
     bms.setBalancingThresholds(0, 3700, 10);
     bms.setIdleCurrentThreshold(100);
-    bms.toggleBalancing(true);
-    bms.toggleCharging(true);
+    bms.toggleBalancing(enable_balancing_);
+    bms.toggleCharging(enable_charging_);
     xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
     bluetoothInit();
     esp_ble_gap_config_adv_data(&adv_data);
