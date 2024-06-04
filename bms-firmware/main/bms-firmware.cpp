@@ -389,10 +389,10 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         ESP_LOG_BUFFER_HEX(TAG, write.value, write.len);
         if(info_handle_table_[IDX_CHAR_VAL_BALANCING] == write.handle && write.len == 1) {
             enable_balancing_ = static_cast<bool>(write.value);
-            bms.setBalancing(enable_balancing_);
+            bms.toggleBalancing(enable_balancing_);
         } else if(info_handle_table_[IDX_CHAR_VAL_CHARGING] == write.handle && write.len == 1) {
             enable_charging_ = static_cast<bool>(write.value);
-            bms.setCharging(enable_charging_);
+            bms.toggleCharging(enable_charging_);
         } else if(info_handle_table_[IDX_CHAR_CFG_FAULT] == write.handle ) {
             uint16_t descr_value = write.value[1]<<8 | write.value[0];
             if (descr_value == 0x0001){
