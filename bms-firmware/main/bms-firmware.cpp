@@ -585,6 +585,7 @@ void bmsUpdateTask(void *pvParameters) {
         } else {
             bms.toggleBalancing(true);
         }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 
@@ -604,20 +605,4 @@ void app_main(void) {
     bluetoothInit();
     esp_ble_gap_config_adv_data(&adv_data);
     esp_ble_gap_start_advertising(&adv_params);
-
-     while (1) {
-    //     bms.update();
-    //     printf("cell1: %d\n", bms.getCellVoltage(1));
-    //     printf("cell2: %d\n", bms.getCellVoltage(2));
-    //     printf("cell3: %d\n", bms.getCellVoltage(3));
-    //     printf("cell4: %d\n", bms.getCellVoltage(4));
-    //     printf("cell5: %d\n", bms.getCellVoltage(5));
-    //     printf("cell6: %d\n", bms.getCellVoltage(6));
-    //     printf("cell7: %d\n", bms.getCellVoltage(7));
-    //     printf("cell8: %d\n", bms.getCellVoltage(8));
-    //     printf("cell9: %d\n", bms.getCellVoltage(9));
-    //     printf("cell10: %d\n", bms.getCellVoltage(10));
-         vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-    }
 }
