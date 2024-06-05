@@ -388,7 +388,7 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         ESP_LOGI(TAG, "GATT_WRITE_EVT, value len %d, value :", write.len);
         ESP_LOG_BUFFER_HEX(TAG, write.value, write.len);
         if(info_handle_table_[IDX_CHAR_VAL_BALANCING] == write.handle && write.len == 1) {
-            enable_balancing_ = (bool)(write.value[0]);
+            enable_balancing_ = static_cast<bool>(write.value[0]);
             bms.toggleBalancing(enable_balancing_);
         } else if(info_handle_table_[IDX_CHAR_VAL_CHARGING] == write.handle && write.len == 1) {
             enable_charging_ = static_cast<bool>(write.value[0]);
@@ -420,7 +420,7 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
         } else if(param_handle_table_[IDX_CHAR_VAL_BALANCING_THRESHOLDS] == write.handle){
             balancing_thresholds_[0] = write.value[1]<<8 | write.value[0];
             balancing_thresholds_[1] = write.value[3]<<8 | write.value[2];
-            bms.setBalancingThresholds(balancing_thresholds_[0], balancing_thresholds_[1]);
+            bms.setBalancingThresholds(0, balancing_thresholds_[0], balancing_thresholds_[1]);
         } else if(param_handle_table_[IDX_CHAR_VAL_IDLE_CURRENT] == write.handle){
             idle_current_ = write.value[1]<<8 | write.value[0];
             bms.setIdleCurrentThreshold(idle_current_);
