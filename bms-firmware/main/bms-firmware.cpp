@@ -607,6 +607,7 @@ void bmsUpdateTask(void *pvParameters) {
         uint8_t fault_ = bms.getErrorState();
         if (fault_ != 0 && fault_notifications_enabled_) {
             esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_FAULT], 1, &fault_, false);
+            fault_ = 0;
         }
         if(only_balance_when_charging_) {
             if(bms.getBatteryCurrent() > 0.05) {
