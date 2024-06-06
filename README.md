@@ -9,6 +9,8 @@ The programming circuitry for the ESP32-C3 is on an external board to save space
 There is also a power latch circuit with a button and the mcu can turn power to itself off.\
 The firmware was made in ESP-IDF 5.1.3
 
+## Problem: The charge fet doesn't seem to turn off when it should!
+
 ## Cloning
 Clone with this command to also get the bq76930 driver component
 ```
@@ -20,8 +22,9 @@ git clone https://github.com/TimBilliet/10s-bq76930-smart-bms.git --recurse-subm
 Testing the cell voltage reading function(tested with existing Arduino library)\
 Testing charge fet cutoff when overvoltage occurs(tested with existing Arduino library)\
 Testing led mosfet (works, so does pwm dimming)\
-Writing BQ76930 esp-idf driver
+Writing BQ76930 esp-idf driver\
+Write firmware
 
 ## TODO:
 Write app\
-Write firmware
+
