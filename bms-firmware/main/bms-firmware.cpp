@@ -32,6 +32,8 @@ uint8_t address = 0x08;
 
 bq76930 bms(address, sda_pin, scl_pin);
 
+uint8_t previous_fault_value = 0;
+
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
 static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
 static const uint16_t character_client_config_uuid = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
@@ -565,12 +567,10 @@ bool bluetoothInit() {
         ESP_LOGE(TAG, "%s enable bluetooth failed: %s", __func__, esp_err_to_name(ret));
         return false;
     }
-    
     ret = esp_ble_gatts_register_callback(gatts_event_handler);
     if (ret) {
         ESP_LOGE(TAG, "gatts register error, error code = %x", ret);
         return false;
-    
     }
     ret = esp_ble_gatts_app_register(0);
     if (ret){
@@ -601,20 +601,21 @@ void updateValsIfChanged() {
     }
 }
 
+
 void bmsUpdateTask(void *pvParameters) {
     while (1) {
         bms.update();
         fault_ = bms.getErrorState();
-        if (fault_ != 0 && fault_notifications_enabled_) {
+        if (fault_ != 0 && fault_notifications_enabled_ && fault_ != previous_fault_value) {
             esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_FAULT], 1, &fault_, false);
-            fault_ = 0;
         }
+        previous_fault_value = fault_;
         if(only_balance_when_charging_ && bms.getBatteryCurrent() < 0.05) {
             bms.toggleBalancing(false);
             enable_balancing_ = false;
         }
         updateValsIfChanged();
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(150 / portTICK_PERIOD_MS);
     }
 }
 
