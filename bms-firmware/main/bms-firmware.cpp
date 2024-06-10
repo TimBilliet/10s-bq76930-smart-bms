@@ -609,14 +609,9 @@ void bmsUpdateTask(void *pvParameters) {
             esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_FAULT], 1, &fault_, false);
             fault_ = 0;
         }
-        if(only_balance_when_charging_) {
-            if(bms.getBatteryCurrent() > 0.05) {
-               // bms.toggleBalancing(true);
-                //enable_balancing_ = true;
-            } else {
-                bms.toggleBalancing(false);
-                enable_balancing_ = false;
-            }
+        if(only_balance_when_charging_ && bms.getBatteryCurrent() < 0.05) {
+            bms.toggleBalancing(false);
+            enable_balancing_ = false;
         }
         updateValsIfChanged();
         vTaskDelay(100 / portTICK_PERIOD_MS);
