@@ -32,8 +32,6 @@ uint8_t address = 0x08;
 
 bq76930 bms(address, sda_pin, scl_pin);
 
-uint8_t previous_fault_value = 0;
-
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
 static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
 static const uint16_t character_client_config_uuid = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
@@ -100,32 +98,47 @@ static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
     /* Characteristic Declaration */
     [IDX_CHAR_BAT_VOLTAGE_CURRENT]     =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_BAT_VOLTAGE_CURRENT] =
     {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&battery_voltage_current_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-    4, 4, (uint8_t *)&dummy}},
+    4, 4, (uint8_t *)&dummy_}},
+
+    /* Client Characteristic Configuration Descriptor */
+    [IDX_CHAR_CFG_BAT_VOLTAGE_CURRENT]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(uint16_t), sizeof(voltage_current_ccc_), (uint8_t *)voltage_current_ccc_}},  
 
     /* Characteristic Declaration */
     [IDX_CHAR_BATTERY_CELL_VOLTAGE]      =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_BATTERY_CELL_VOLTAGE]  =
     {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&battery_cell_voltage_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(battery_cell_voltage_), sizeof(battery_cell_voltage_), (uint8_t *)battery_cell_voltage_}},
 
+    /* Client Characteristic Configuration Descriptor */
+    [IDX_CHAR_CFG_BATTERY_CELL_VOLTAGE]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(uint16_t), sizeof(cell_voltage_ccc_), (uint8_t *)cell_voltage_ccc_}},
+
     /* Characteristic Declaration */
     [IDX_CHAR_CELL_BALANCING_STATE]      =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_CELL_BALANCING_STATE]  =
     {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&cell_balancing_state_char_uuid_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(cell_balancing_state_), sizeof(cell_balancing_state_), (uint8_t *)cell_balancing_state_}},
+
+    /* Client Characteristic Configuration Descriptor */
+    [IDX_CHAR_CFG_CELL_BALANCING_STATE]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(uint16_t), sizeof(cell_balancing_state_ccc_), (uint8_t *)cell_balancing_state_ccc_}},
 
     /* Characteristic Declaration */
     [IDX_CHAR_BALANCING]      =
@@ -139,7 +152,7 @@ static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
 
     /* Client Characteristic Configuration Descriptor */
     [IDX_CHAR_CFG_BALANCING]  =
-    {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(uint16_t), sizeof(balancing_ccc_), (uint8_t *)balancing_ccc_}},
 
     /* Characteristic Declaration */
@@ -154,7 +167,7 @@ static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
 
     /* Client Characteristic Configuration Descriptor */
     [IDX_CHAR_CFG_CHARGING]  =
-    {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(uint16_t), sizeof(charging_ccc_), (uint8_t *)charging_ccc_}},  
 
     /* Characteristic Declaration */
@@ -169,7 +182,7 @@ static const esp_gatts_attr_db_t gatt_info_db[INFO_TABLE_ITEM_COUNT] = {
 
     /* Client Characteristic Configuration Descriptor */
     [IDX_CHAR_CFG_FAULT]  =
-    {{ESP_GATT_RSP_BY_APP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(uint16_t), sizeof(fault_ccc_), (uint8_t *)fault_ccc_}},    
 };
 
@@ -294,15 +307,15 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
     esp_gatt_rsp_t rsp;
     memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
     rsp.attr_value.handle = read.handle;
-
+    bool auto_response = false;
     if(read.handle == info_handle_table_[IDX_CHAR_VAL_BAT_VOLTAGE_CURRENT]) { // reading of the battery voltage and current characteristic
         battery_voltage_ = bms.getBatteryVoltage();
         charge_current_ = bms.getBatteryCurrent();
         rsp.attr_value.len = 4;
-        rsp.attr_value.value[0] = battery_voltage_ >> 8;
-        rsp.attr_value.value[1] = battery_voltage_ & 0xFF;
-        rsp.attr_value.value[2] = charge_current_ >> 8;
-        rsp.attr_value.value[3] = charge_current_ & 0xFF;
+        rsp.attr_value.value[1] = battery_voltage_ >> 8;
+        rsp.attr_value.value[0] = battery_voltage_ & 0xFF;
+        rsp.attr_value.value[3] = charge_current_ >> 8;
+        rsp.attr_value.value[2] = charge_current_ & 0xFF;
     } else if (read.handle == info_handle_table_[IDX_CHAR_VAL_BATTERY_CELL_VOLTAGE]) { // reading of the battery cell voltage characteristic
         rsp.attr_value.len = 20;
         uint8_t response_index = 0;
@@ -310,8 +323,8 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
             battery_cell_voltage_[i] = bms.getCellVoltage(i + 1);
             uint8_t MSByte = battery_cell_voltage_[i] >> 8;
             uint8_t LSByte = battery_cell_voltage_[i] & 0xFF;
-            rsp.attr_value.value[response_index] = MSByte;
-            rsp.attr_value.value[response_index + 1] = LSByte;
+            rsp.attr_value.value[response_index] = LSByte;
+            rsp.attr_value.value[response_index + 1] = MSByte;
             response_index += 2;
         }
     } else if (read.handle == info_handle_table_[IDX_CHAR_VAL_CELL_BALANCING_STATE]) { // reading of the cell balancing state characteristic
@@ -374,9 +387,11 @@ void onReadEvent(esp_ble_gatts_cb_param_t::gatts_read_evt_param read, esp_gatt_i
         rsp.attr_value.value[0] = only_balance_when_charging_;
     }
     else {
-        ESP_LOGE(TAG, "Unknown read handle");
+        auto_response = true;
     }
-    esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
+    if(!auto_response) {
+            esp_ble_gatts_send_response(gatts_if, read.conn_id, read.trans_id,ESP_GATT_OK, &rsp);
+    }
 }
 
 void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gatt_if_t gatts_if) {
@@ -394,11 +409,8 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
             if (descr_value == 0x0001){
                 ESP_LOGI(TAG, "fault notify enable");
                 fault_notifications_enabled_ = true;
-            } else if (descr_value == 0x0002){
-                ESP_LOGI(TAG, "fault indicate enable");
-                fault_notifications_enabled_ = true;
             } else if (descr_value == 0x0000){
-                ESP_LOGI(TAG, "fault notify/indicate disable ");
+                ESP_LOGI(TAG, "fault notify disable ");
                 fault_notifications_enabled_ = false;
             }
         }else if(info_handle_table_[IDX_CHAR_CFG_BALANCING] == write.handle ) {
@@ -406,11 +418,8 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
             if (descr_value == 0x0001){
                 ESP_LOGI(TAG, "balancing notify enable");
                 balancing_notifications_enabled_ = true;
-            } else if (descr_value == 0x0002){
-                ESP_LOGI(TAG, "balancing indicate enable");
-                balancing_notifications_enabled_ = true;
             } else if (descr_value == 0x0000){
-                ESP_LOGI(TAG, "balancing notify/indicate disable ");
+                ESP_LOGI(TAG, "balancing notify disable ");
                 balancing_notifications_enabled_ = false;
             }
         } else if(info_handle_table_[IDX_CHAR_CFG_CHARGING] == write.handle ) {
@@ -418,12 +427,36 @@ void onWriteEvent(esp_ble_gatts_cb_param_t::gatts_write_evt_param write, esp_gat
             if (descr_value == 0x0001){
                 ESP_LOGI(TAG, "charging notify enable");
                 charging_notifications_enabled_ = true;
-            } else if (descr_value == 0x0002){
-                ESP_LOGI(TAG, "charging indicate enable");
-                charging_notifications_enabled_ = true;
             } else if (descr_value == 0x0000){
-                ESP_LOGI(TAG, "charging notify/indicate disable ");
+                ESP_LOGI(TAG, "charging notify disable ");
                 charging_notifications_enabled_ = false;
+            }
+        } else if(info_handle_table_[IDX_CHAR_CFG_BAT_VOLTAGE_CURRENT] == write.handle ) {
+            uint16_t descr_value = write.value[1]<<8 | write.value[0];
+            if (descr_value == 0x0001){
+                ESP_LOGI(TAG, "voltage & current notify enable");
+                voltage_current_notifications_enabled_ = true;
+            } else if (descr_value == 0x0000){
+                ESP_LOGI(TAG, "voltage & current notify disable ");
+                voltage_current_notifications_enabled_ = false;
+            }
+        } else if(info_handle_table_[IDX_CHAR_CFG_BATTERY_CELL_VOLTAGE] == write.handle ) {
+            uint16_t descr_value = write.value[1]<<8 | write.value[0];
+            if (descr_value == 0x0001){
+                ESP_LOGI(TAG, "cell voltage notify enable");
+                cell_voltage_notifications_enabled_ = true;
+            } else if (descr_value == 0x0000){
+                ESP_LOGI(TAG, "cell voltage notify disable ");
+                cell_voltage_notifications_enabled_ = false;
+            }
+        } else if(info_handle_table_[IDX_CHAR_CFG_CELL_BALANCING_STATE] == write.handle ) {
+            uint16_t descr_value = write.value[1]<<8 | write.value[0];
+            if (descr_value == 0x0001){
+                ESP_LOGI(TAG, "cell balancing state notify enable");
+                cell_balancing_state_notifications_enabled_ = true;
+            } else if (descr_value == 0x0000){
+                ESP_LOGI(TAG, "cell balancing state notify disable ");
+                cell_balancing_state_notifications_enabled_ = false;
             }
         } else if(param_handle_table_[IDX_CHAR_VAL_SHUNT_RESISTOR] == write.handle && write.len == 1) {
             shunt_resistor_ = write.value[0];
@@ -499,6 +532,7 @@ static void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
                     param->connect.remote_bda[3], param->connect.remote_bda[4], param->connect.remote_bda[5]);
             connected_devices_++;
             connection_id_ = param->connect.conn_id;
+            connected_ = true;
             if(connected_devices_ < max_connected_devices_) {
                 esp_ble_gap_start_advertising(&adv_params);
             }     
@@ -506,6 +540,7 @@ static void gattServerEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
         case ESP_GATTS_DISCONNECT_EVT:
             ESP_LOGI(TAG, "ESP_GATTS_DISCONNECT_EVT, disconnect reason 0x%x", param->disconnect.reason);
             connected_devices_--;
+            connected_ = false;
             esp_ble_gap_start_advertising(&adv_params);
         break;
         case ESP_GATTS_RESPONSE_EVT:
@@ -590,32 +625,61 @@ bool bluetoothInit() {
     return true;
 }
 
-void updateValsIfChanged() {
-    if(previous_enable_balancing_ != enable_balancing_ && balancing_notifications_enabled_) {
-        esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_BALANCING], 1, (uint8_t*)&enable_balancing_, false);
-        previous_enable_balancing_ = enable_balancing_;
+void retrieveValues() {
+    for (int i = 0; i < 10; i++) {
+        battery_cell_voltage_[i] = bms.getCellVoltage(i + 1);
+        cell_balancing_state_[i] = bms.getBalancingState(i + 1);
     }
-    if(previous_enable_charging_ != enable_charging_ && charging_notifications_enabled_) {
-        esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_CHARGING], 1, (uint8_t*)&enable_charging_, false);
-        previous_enable_charging_ = enable_charging_;
-    }
+    battery_voltage_ = bms.getBatteryVoltage();
+    charge_current_ = bms.getBatteryCurrent();
+
 }
-
-
 void bmsUpdateTask(void *pvParameters) {
     while (1) {
         bms.update();
         fault_ = bms.getErrorState();
-        if (fault_ != 0 && fault_notifications_enabled_ && fault_ != previous_fault_value) {
+        if (fault_ != previous_fault_value_ && fault_notifications_enabled_ && fault_ != previous_fault_value_) {
             esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_FAULT], 1, &fault_, false);
+            previous_fault_value_ = fault_;
         }
-        previous_fault_value = fault_;
+        
         if(only_balance_when_charging_ && bms.getBatteryCurrent() < 0.05) {
             bms.toggleBalancing(false);
             enable_balancing_ = false;
         }
-        updateValsIfChanged();
         vTaskDelay(150 / portTICK_PERIOD_MS);
+    }
+}
+
+void sendNotificationsTask(void *pvParameters) {
+    while(1) {
+        if(connected_) {
+            retrieveValues();
+            if(previous_enable_balancing_ != enable_balancing_ && balancing_notifications_enabled_) {
+                esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_BALANCING], 1, (uint8_t*)&enable_balancing_, false);
+                previous_enable_balancing_ = enable_balancing_;
+            }
+            if(previous_enable_charging_ != enable_charging_ && charging_notifications_enabled_) {
+                esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_CHARGING], 1, (uint8_t*)&enable_charging_, false);
+                previous_enable_charging_ = enable_charging_;
+            }
+            if(!std::equal(std::begin(previous_battery_cell_voltage_), std::end(previous_battery_cell_voltage_), std::begin(battery_cell_voltage_)) && cell_voltage_notifications_enabled_) {
+                esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_BATTERY_CELL_VOLTAGE], 20, (uint8_t*)&battery_cell_voltage_, false);
+                memcpy(previous_battery_cell_voltage_, battery_cell_voltage_, sizeof(battery_cell_voltage_));
+            }
+            if(!std::equal(std::begin(previous_cell_balancing_state_), std::end(previous_cell_balancing_state_), std::begin(cell_balancing_state_)) && cell_balancing_state_notifications_enabled_) {
+                esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_CELL_BALANCING_STATE], 10, (uint8_t*)&cell_balancing_state_, false);
+                memcpy(previous_cell_balancing_state_, cell_balancing_state_, sizeof(cell_balancing_state_));
+            }
+            if((previous_battery_voltage_ != battery_voltage_ || previous_charge_current_ != charge_current_) && voltage_current_notifications_enabled_) {
+                dummy_[0] = battery_voltage_;
+                dummy_[1] = charge_current_;
+                esp_ble_gatts_send_indicate(bms_profile_tab.gatts_if, connection_id_, info_handle_table_[IDX_CHAR_VAL_BAT_VOLTAGE_CURRENT], 4, (uint8_t*)&dummy_, false);
+                previous_battery_voltage_ = battery_voltage_;
+                previous_charge_current_ = charge_current_;
+            }
+        }
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
 
@@ -631,8 +695,9 @@ void app_main(void) {
     bms.setIdleCurrentThreshold(100);
     bms.toggleBalancing(enable_balancing_);
     bms.toggleCharging(enable_charging_);
-    xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
     bluetoothInit();
+    xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
+    xTaskCreate(sendNotificationsTask, "sendNotificationsTask", 2048, NULL, 5, NULL);
     esp_ble_gap_config_adv_data(&adv_data);
     esp_ble_gap_start_advertising(&adv_params);
 }
