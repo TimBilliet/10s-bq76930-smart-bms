@@ -22,8 +22,8 @@ bool cell_balancing_state_[10] = {false};
 uint16_t previous_charge_current_ = 0;
 uint16_t charge_current_ = 0;
 
-bool previous_enable_balancing_ = true;
-bool enable_balancing_ = true;
+bool previous_enable_balancing_ = false;
+bool enable_balancing_ = false;
 
 bool previous_enable_charging_ = true;
 bool enable_charging_ = true;
