@@ -27,4 +27,5 @@ Write firmware
 
 ## TODO:
 Write app\
+Implement OTA
 
