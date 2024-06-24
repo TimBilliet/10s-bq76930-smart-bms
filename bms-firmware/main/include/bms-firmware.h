@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include <map>
 
@@ -5,7 +6,6 @@ const char *ble_device_name = "SmartBMS";
 
 uint8_t max_connected_devices_ = 1;
 uint8_t connected_devices_ = 0;
-uint8_t connection_id_ = 0;
 bool connected_ = false;
 
 uint16_t dummy_[2] = {0, 0};
