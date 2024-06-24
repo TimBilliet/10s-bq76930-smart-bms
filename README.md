@@ -18,6 +18,9 @@ git clone https://github.com/TimBilliet/10s-bq76930-smart-bms.git --recurse-subm
 ```
 ![image](https://github.com/TimBilliet/10s-bq76930-smart-bms/assets/47719114/006d26ed-25e1-4275-9ca6-337fc7d32524)
 
+## App
+https://github.com/TimBilliet/smart-bms-app
+
 ## DONE:
 Testing led mosfet (works, so does pwm dimming)\
 Writing BQ76930 esp-idf driver\
