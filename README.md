@@ -23,9 +23,9 @@ https://github.com/TimBilliet/smart-bms-app
 Testing led mosfet (works, so does pwm dimming)\
 Writing BQ76930 esp-idf driver\
 Write firmware\
-Implement OTA
+Implement OTA\
+Write app
 
 ## TODO:
-Write app(need to implement ota)\
-Fix charge FET not turning off
+nothing :)
 
