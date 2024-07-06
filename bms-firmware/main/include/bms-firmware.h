@@ -62,7 +62,6 @@ const uint8_t voltage_current_ccc_[2] = {0x00, 0x00};
 const uint8_t cell_voltage_ccc_[2] = {0x00, 0x00};
 const uint8_t cell_balancing_state_ccc_[2] = {0x00, 0x00};
 
-
 const uint16_t parameters_service_uuid_ = 0x4000;
 const uint16_t shunt_resistor_char_uuid_ = 0x4001;
 const uint16_t overcurrent_charge_char_uuid_ = 0x4002;
@@ -72,6 +71,13 @@ const uint16_t balancing_thresholds_char_uuid_ = 0x4005;
 const uint16_t idle_current_char_uuid_ = 0x4006;
 const uint16_t power_on_char_uuid_ = 0x4007;
 const uint16_t only_balance_when_charging_char_uuid_ = 0x4008;
+
+
+const uint8_t rmt_pin_ = 3;
+const uint8_t lights_pin_ = 10;
+const uint16_t braking_threshold_us_ = 1520;
+
+
 
 enum {
     IDX_INFO_SERVICE,

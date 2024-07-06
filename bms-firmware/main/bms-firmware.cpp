@@ -17,6 +17,7 @@
 #include "bms-firmware.h"
 #include "ble_ota.h"
 #include "esp_ota_ops.h"
+#include "driver/rmt_rx.h"
 
 extern "C" {void app_main(void);}
 
@@ -49,7 +50,12 @@ esp_ble_ota_notification_check_t ota_notification = {
     .customer_ntf_enable = false,
 };
 
-RingbufHandle_t s_ringbuf = NULL;
+RingbufHandle_t otaRingbufHandle = NULL;
+rmt_channel_handle_t rx_channel = NULL;
+rmt_symbol_word_t raw_symbols[16];
+rmt_rx_done_event_data_t rx_data;
+rmt_receive_config_t receive_config;
+QueueHandle_t receive_queue = NULL;
 
 int sda_pin = 5;
 int scl_pin = 4;
@@ -1064,22 +1070,6 @@ static void gatts_ota_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
             esp_ble_gatts_start_service(ota_handle_table[OTA_SVC_IDX]);
         }
         break;
-    case ESP_GATTS_STOP_EVT:
-        break;
-    case ESP_GATTS_OPEN_EVT:
-        break;
-    case ESP_GATTS_CANCEL_OPEN_EVT:
-        break;
-    case ESP_GATTS_CLOSE_EVT:
-        break;
-    case ESP_GATTS_LISTEN_EVT:
-        break;
-    case ESP_GATTS_CONGEST_EVT:
-        break;
-    case ESP_GATTS_UNREG_EVT:
-        break;
-    case ESP_GATTS_DELETE_EVT:
-        break;
     default:
         break;
     }
@@ -1181,8 +1171,7 @@ static esp_err_t esp_ble_ota_send_indication(esp_ble_ota_service_index_t index, 
     return ESP_OK;
 }
 
-esp_err_t esp_ble_ota_notification_data(esp_ble_ota_char_t ota_char, uint8_t *value, uint8_t length)
-{
+esp_err_t esp_ble_ota_notification_data(esp_ble_ota_char_t ota_char, uint8_t *value, uint8_t length) {
     esp_err_t ret = ESP_FAIL;
     switch (ota_char) {
     case RECV_FW_CHAR:
@@ -1232,6 +1221,7 @@ esp_err_t esp_ble_ota_recv_fw_data_callback(esp_ble_ota_recv_fw_cb_t callback) {
 }
 
 bool bluetoothInit() {
+    ESP_LOGI(TAG, "Initializing Bluetooth");
     esp_err_t ret;
     ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -1289,12 +1279,12 @@ bool bluetoothInit() {
     esp_ble_gap_set_security_param(ESP_BLE_SM_SET_INIT_KEY, &init_key, sizeof(uint8_t));
     esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
     ret = esp_ble_gatt_set_local_mtu(517);
-    if (ret){
+    if (ret) {
         ESP_LOGE(TAG, "set local  MTU failed, error code = %x", ret);
         return false;
     }
     ret = esp_ble_gap_set_device_name(ble_device_name);
-    if (ret){
+    if (ret) {
         ESP_LOGE(TAG, "set name failed, error code = %x", ret);
         return false;
     } 
@@ -1311,7 +1301,8 @@ void retrieveValues() {
 
 }
 void bmsUpdateTask(void *pvParameters) {
-    while (1) {
+    ESP_LOGI(TAG, "BMS update task started");
+    for (;;) {
         bms.update();
         fault_ = bms.getErrorState();
         if (fault_ != previous_fault_value_ && fault_notifications_enabled_ && fault_ != previous_fault_value_) {
@@ -1325,10 +1316,12 @@ void bmsUpdateTask(void *pvParameters) {
         }
         vTaskDelay(150 / portTICK_PERIOD_MS);
     }
+    vTaskDelete(NULL);
 }
 
 void sendNotificationsTask(void *pvParameters) {
-    while(1) {
+    ESP_LOGI(TAG, "Send notifications task started");
+    for(;;) {
         if(connected_) {
             retrieveValues();
             if(previous_enable_balancing_ != enable_balancing_ && balancing_notifications_enabled_) {
@@ -1357,18 +1350,19 @@ void sendNotificationsTask(void *pvParameters) {
         }
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
+    vTaskDelete(NULL);
 }
 
 bool ble_ota_ringbuf_init(uint32_t ringbuf_size) {
-    s_ringbuf = xRingbufferCreate(ringbuf_size, RINGBUF_TYPE_BYTEBUF);
-    if (s_ringbuf == NULL) {
+    otaRingbufHandle = xRingbufferCreate(ringbuf_size, RINGBUF_TYPE_BYTEBUF);
+    if (otaRingbufHandle == NULL) {
         return false;
     }
     return true;
 }
 
 size_t write_to_ringbuf(const uint8_t *data, size_t size) {
-    BaseType_t done = xRingbufferSend(s_ringbuf, (void *)data, size, (TickType_t)portMAX_DELAY);
+    BaseType_t done = xRingbufferSend(otaRingbufHandle, (void *)data, size, (TickType_t)portMAX_DELAY);
     if (done) {
         return size;
     } else {
@@ -1390,7 +1384,6 @@ void ota_task(void *arg) {
     uint8_t *data = NULL;
     size_t item_size = 0;
     ESP_LOGI(TAG, "ota_task start");
-    // search ota partition
     partition_ptr = (esp_partition_t *)esp_ota_get_boot_partition();
     if (partition_ptr == NULL) {
         ESP_LOGE(TAG, "boot partition NULL!\r\n");
@@ -1426,9 +1419,8 @@ void ota_task(void *arg) {
     }
 
     ESP_LOGI(TAG, "wait for data from ringbuf! fw_len = %u", esp_ble_ota_get_fw_length());
-    /*deal with all receive packet*/
     for (;;) {
-        data = (uint8_t *)xRingbufferReceive(s_ringbuf, &item_size, (TickType_t)portMAX_DELAY);
+        data = (uint8_t *)xRingbufferReceive(otaRingbufHandle, &item_size, (TickType_t)portMAX_DELAY);
 
         ESP_LOGI(TAG, "recv: %u, recv_total:%"PRIu32"\n", item_size, recv_len + item_size);
         if (item_size != 0) {
@@ -1437,7 +1429,7 @@ void ota_task(void *arg) {
                 goto OTA_ERROR;
             }
             recv_len += item_size;
-            vRingbufferReturnItem(s_ringbuf, (void *)data);
+            vRingbufferReturnItem(otaRingbufHandle, (void *)data);
 
             if (recv_len >= esp_ble_ota_get_fw_length()) {
                 break;
@@ -1462,8 +1454,73 @@ void ota_task(void *arg) {
         vTaskDelete(NULL);
 }
 
-void ota_task_init(void) {
-    xTaskCreate(&ota_task, "ota_task", OTA_TASK_SIZE, NULL, 5, NULL);
+static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data) {
+    BaseType_t high_task_wakeup = pdFALSE;
+    QueueHandle_t receive_queue = (QueueHandle_t)user_data;
+    xQueueSendFromISR(receive_queue, edata, &high_task_wakeup);
+    return high_task_wakeup == pdTRUE;
+}
+
+void rmtInit() {
+    ESP_LOGI(TAG, "Initialise RMT");
+    esp_err_t ret;
+    rmt_channel_handle_t led_chan = NULL;
+    rmt_rx_channel_config_t rx_chan_config = {
+        .gpio_num = (gpio_num_t)rmt_pin_,
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = 1000000,
+        .mem_block_symbols = 64,
+    };
+    
+    ret = rmt_new_rx_channel(&rx_chan_config, &rx_channel);
+    if(ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create RMT RX channel");
+        return;
+    }
+    receive_queue = xQueueCreate(1, sizeof(rmt_rx_done_event_data_t));
+    if(receive_queue == NULL) {
+        ESP_LOGE(TAG, "Failed to create receive queue");
+        return;
+    }
+    rmt_rx_event_callbacks_t cbs = {
+        .on_recv_done = rmt_rx_done_callback,
+    };
+    ret = rmt_rx_register_event_callbacks(rx_channel, &cbs, receive_queue);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to register RMT RX event callback");
+        return;
+    }
+    receive_config = {
+        .signal_range_min_ns = 2000,
+        .signal_range_max_ns = 3000000,
+    };
+    ret = rmt_enable(rx_channel);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to enable RMT RX channel");
+        return;
+    }
+    ret = gpio_set_direction((gpio_num_t)lights_pin_, GPIO_MODE_OUTPUT);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set lights pin GPIO direction");
+        return;
+    }
+}
+
+void rmtTask(void *pvParameters) {
+    ESP_LOGI(TAG, "RMT task started");
+    rmt_receive(rx_channel, raw_symbols, sizeof(raw_symbols), &receive_config);
+    for(;;) {
+        if (xQueueReceive(receive_queue, &rx_data, pdMS_TO_TICKS(1000)) == pdPASS) {
+            //ESP_LOGI(TAG, "Pulse width: %d µs", rx_data.received_symbols->duration0);
+            if(rx_data.received_symbols->duration0 < braking_threshold_us_) {
+                gpio_set_level((gpio_num_t)lights_pin_, 1);
+            } else {
+                gpio_set_level((gpio_num_t)lights_pin_, 0);
+            }
+            rmt_receive(rx_channel, raw_symbols, sizeof(raw_symbols), &receive_config);
+        }
+    }
+    vTaskDelete(NULL);
 }
 
 void app_main(void) {
@@ -1483,12 +1540,13 @@ void app_main(void) {
         ESP_LOGE(TAG, "%s init ringbuf fail", __func__);
         return;
     }
-     bluetoothInit();
-     esp_ble_ota_recv_fw_data_callback(ota_recv_fw_cb);
-     ota_task_init();
-
+    bluetoothInit();
+    esp_ble_ota_recv_fw_data_callback(ota_recv_fw_cb);
+    rmtInit();
+    xTaskCreate(ota_task, "otaTask", OTA_TASK_SIZE, NULL, 5, NULL);
     xTaskCreate(bmsUpdateTask, "bmsUpdateTask", 2048, NULL, 5, NULL);
     xTaskCreate(sendNotificationsTask, "sendNotificationsTask", 2048, NULL, 5, NULL);
+    xTaskCreate(rmtTask, "rmtTask", 3000, NULL, 5, NULL);	
     esp_ble_gap_config_adv_data(&adv_data);
     esp_ble_gap_start_advertising(&adv_params);
 }
