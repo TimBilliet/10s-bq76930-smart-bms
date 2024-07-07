@@ -75,7 +75,7 @@ const uint16_t only_balance_when_charging_char_uuid_ = 0x4008;
 
 const uint8_t rmt_pin_ = 3;
 const uint8_t lights_pin_ = 10;
-const uint16_t braking_threshold_us_ = 1520;
+const uint16_t braking_threshold_us_ = 1510;
 
 
 
