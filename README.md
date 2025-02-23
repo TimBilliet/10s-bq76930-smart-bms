@@ -10,12 +10,14 @@ The programming circuitry for the ESP32-C3 is on an external board to save space
 
 The firmware was made in ESP-IDF 5.1.3
 
+![image](https://github.com/user-attachments/assets/d45c9571-51e3-44de-8a31-cbb1526678b2)
+
 ## Cloning
 Clone with this command to also get the bq76930 driver component
 ```
 git clone https://github.com/TimBilliet/10s-bq76930-smart-bms.git --recurse-submodules
 ```
-![image](https://github.com/TimBilliet/10s-bq76930-smart-bms/assets/47719114/006d26ed-25e1-4275-9ca6-337fc7d32524)
+
 
 ## App
 https://github.com/TimBilliet/smart-bms-app
