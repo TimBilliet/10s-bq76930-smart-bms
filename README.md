@@ -17,7 +17,7 @@ Clone with this command to also get the bq76930 driver component
 ```
 git clone https://github.com/TimBilliet/10s-bq76930-smart-bms.git --recurse-submodules
 ```
-## Updateing BQ76930 component
+## Updating BQ76930 component
 Pull the latest changes of the BQ76930 driver with this command
 ```
 git submodule foreach git pull origin main
