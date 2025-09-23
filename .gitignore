@@ -52,9 +52,10 @@ Mkfile.old
 dkms.conf
 *.html
 .vscode
-Project Logs for BMS
-History
-__Previews
+**/__Previews/
+**/History/*
+Project Logs*/
+Project Outputs*/
 build/
 sdkconfig.old
 
