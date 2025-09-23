@@ -10,7 +10,7 @@ The programming circuitry for the ESP32-C3 is on an external board to save space
 
 The firmware was made in ESP-IDF 5.1.3
 
-![image](https://github.com/user-attachments/assets/d45c9571-51e3-44de-8a31-cbb1526678b2)
+<img width="1062" height="530" alt="image" src="https://github.com/user-attachments/assets/508994c3-5ff3-4a01-b2df-e24be5f06039" />
 
 ## Cloning
 Clone with this command to also get the bq76930 driver component
