@@ -25,12 +25,6 @@ git submodule foreach git pull origin main
 ## App
 https://github.com/TimBilliet/smart-bms-app
 
-## DONE:
-- [x] Writing BQ76930 esp-idf driver\
-- [x] Write firmware\
-- [x] Write app
-- [x] Implement OTA (in firmware and in app)\
-
 ## TODO:
 - [ ] Implement over charge current protection in firmware 
 
